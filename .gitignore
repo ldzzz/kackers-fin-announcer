@@ -172,6 +172,6 @@ poetry.toml
 
 # End of https://www.toptal.com/developers/gitignore/api/python
 
-*/config.json
-*/__pycache__/
+*config.json
+*__pycache__/
 */mariadb

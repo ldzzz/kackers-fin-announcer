@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  finbot:
+    build:  
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+      args:
+        - UID=1000
+        - GID=1000
+    tty: true
+    volumes:
+      - ..:/workspace:cached
+    depends_on:
+      - mariadb
+
+  mariadb:
+    image: mariadb:10.9.5
+    environment:
+      MYSQL_ROOT_PASSWORD: secretrootpassword
+      MYSQL_USER: superuser
+      MYSQL_PASSWORD: secretpassword
+      MYSQL_DATABASE: finbot
+    volumes:
+      - ${PWD}/mariadb:/var/lib/mysql:rw
+    ports:
+      - 3306:3306
