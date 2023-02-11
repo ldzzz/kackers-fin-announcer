@@ -2,8 +2,10 @@ import asyncio
 from pathlib import Path
 
 import discord
-from botils.utils import CFG
+from botils.utils import CFG, _get_module_logger
 from discord.ext import commands
+
+logger = _get_module_logger(__name__)
 
 
 class KackersFinAnnouncer(commands.Bot):
@@ -13,20 +15,19 @@ class KackersFinAnnouncer(commands.Bot):
         # TODO: rework to save one guild one channel i think its fine for now
         for guild in self.guilds:
             if str(guild.id) == CFG.bot.server_id:
-                print(f"Found server {guild.name}")
+                logger.info(f"Found server {guild.name}")
                 for ch in guild.text_channels:
                     if ch.name == CFG.bot.fin_channel:
                         self._data.append({"guild_id": guild.id, "finch_id": ch.id})
-                        print(f"Found {ch.name} in {guild.name}")
+                        logger.info(f"Found {ch.name} in {guild.name}")
                         break
                 else:
-                    print(
+                    logger.error(
                         f"Didn't find channel {CFG.bot.get.fin_channel} in {guild.name}"
                     )
                 break
         else:
-            print(f"Didn't find server with id: {CFG.bot.server_id}")
-        # await self.get_channel(finch).send(embed=_build_fin_embed())
+            logger.error(f"Didn't find server with id: {CFG.bot.server_id}")
 
 
 async def load_extensions(bot):
@@ -41,6 +42,8 @@ async def main():
     )
     async with kfa:
         await load_extensions(kfa)
+        kfa.cogs
+        logger.info("Loaded extensions: {kfa.}")
         await kfa.start(CFG.bot.token)
 
 

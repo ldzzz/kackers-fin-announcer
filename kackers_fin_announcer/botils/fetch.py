@@ -1,3 +1,7 @@
+from botils.utils import _get_module_logger
+
+logger = _get_module_logger(__name__)
+
 @tasks.loop(seconds=10)
 async def fetch_fins(members):
 

@@ -3,6 +3,25 @@ from pathlib import Path
 
 import discord
 import namedtupled
+import logging
+
+
+def _get_module_logger(mod_name):
+    """
+    To use this, do logger = get_module_logger(__name__)
+    """
+    logger = logging.getLogger(mod_name)
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter(
+        "%(asctime)s [%(levelname)-8s] (%(name)-s:%(lineno)-s) %(message)s"
+    )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+    return logger
+
+
+logger = _get_module_logger(__name__)
 
 
 def _load_config():
@@ -10,11 +29,12 @@ def _load_config():
     with open(Path.cwd() / "config.json", "r") as fp:
         data = json.load(fp)
         CFG = namedtupled.map(data, "CFG")
-        print(CFG)
+    logger.info("CFG loaded")
 
 
 # TODO: build db of thumbnails - urls?? or dl to local files ?? - worse prob for me
 def build_announce_embed(fin_data, rank) -> discord.Embed:
+    logger.debug("Building announce embed")
     fin_embed = discord.Embed(
         title=":heart_eyes: NEW FINISH :heart_eyes:",
         url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
