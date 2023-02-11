@@ -22,6 +22,7 @@ services:
       MYSQL_PASSWORD: secretpassword
       MYSQL_DATABASE: finbot
     volumes:
+      - ${PWD}/.devcontainer/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ${PWD}/mariadb:/var/lib/mysql:rw
     ports:
       - 3306:3306

@@ -1,8 +1,9 @@
-import discord
-from discord.ext import commands
 import asyncio
 from pathlib import Path
+
+import discord
 from botils.utils import CFG
+from discord.ext import commands
 
 
 class KackersFinAnnouncer(commands.Bot):

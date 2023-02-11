@@ -1,5 +1,5 @@
-from discord.ext import commands
 from discord import User
+from discord.ext import commands
 
 
 class KFADm(commands.Cog, name="DMCog"):

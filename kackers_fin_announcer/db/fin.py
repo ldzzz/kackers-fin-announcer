@@ -1,7 +1,9 @@
 # Module Imports
-import mariadb
 import sys
+
 from botils.utils import CFG
+
+import mariadb
 
 
 class FinAnnouncerDB:

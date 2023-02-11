@@ -174,4 +174,4 @@ poetry.toml
 
 *config.json
 *__pycache__/
-*/mariadb
+*mariadb

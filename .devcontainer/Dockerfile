@@ -11,8 +11,8 @@ ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
 
 # Create docker non-root user
-RUN groupadd -g ${GID} devUser \
-    && useradd -m -u ${UID} -g devUser devUser
+RUN groupadd -g ${GID} ${USERNAME} \
+    && useradd -m -u ${UID} -g ${USERNAME} ${USERNAME}
 
 # Install dependencies
 RUN apt -y update \
