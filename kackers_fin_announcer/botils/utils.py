@@ -33,14 +33,16 @@ def _load_config():
 
 
 def _cleanup_fins(fins: dict):
-    """Remove duplicate fins if [v2] of map exists"""
+    """Remove duplicate fins if [v2] exist and return data as tuples"""
     logger.debug("Cleaning up finishes")
-    v2s = list(filter(lambda x: "v2" in x, fins.keys()))
-    for map in v2s:
-        nr = map.split(" ")[0]
-        fins.pop(nr, None)
-    logger.debug("Done cleaning up finishes")
-    return fins
+    v2s = [x.split()[0] for x in list(filter(lambda x: "v2" in x, fins.keys()))]
+    ret = []
+    for map, data in fins.items():
+        if map in v2s:
+            continue
+        tmp = (map,) + tuple(data.values())
+        ret.append(tmp)
+    return ret
 
 
 # TODO: build db of thumbnails - urls?? or dl to local files ?? - worse prob for me

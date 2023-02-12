@@ -5,31 +5,25 @@ logger = _get_module_logger(__name__)
 
 
 @DBConnection
-def add_player(player: str, fins: dict, ctx=None):
+def add_player(player: str, fins: list, ctx=None):
     """Add player and their fetched finishes to database."""
-    logger.debug(f"Add called: player={player}, ctx={ctx}")
-    fincount = len(fins.keys())
-    pquery = "INSERT IGNORE INTO player (username, fincount) VALUES (?, ?)"
+    fincount = len(fins)
+    pquery = "INSERT IGNORE INTO players (username, fincount) VALUES (?, ?)"
     ctx.cursor.execute(pquery, (player, fincount))
-    fquery = f"INSERT INTO mapfin (mapname, score, rank, date, player_id) VALUES (?, ?, ?, FROM_UNIXTIME(?), {ctx.cursor.lastrowid})"
+    fquery = f"INSERT INTO mapfins (mapname, score, rank, date, player_id) VALUES (?, ?, ?, FROM_UNIXTIME(?), {ctx.cursor.lastrowid})"
     # bulk add all fins
-    for mapname, mapdata in fins.items():
-        to_insert = (mapname,) + tuple(mapdata.values())
-        ctx.cursor.execute(fquery, to_insert)
-    return True
+    ctx.cursor.executemany(fquery, fins)
 
 
 @DBConnection
 def remove_player(player: str, ctx=None):
     """Remove player & their finishes from database."""
-    logger.debug(f"Remove called: player={player}, ctx={ctx}")
-    query = "DELETE FROM player WHERE username=?"
+    query = "DELETE FROM players WHERE username=?"
     ctx.cursor.execute(query, (player,))
 
 
 @DBConnection
 def update_username(old: str, new: str, ctx=None):
     """Update player username in database."""
-    logger.debug(f"Update called: {old}->{new}, ctx={ctx}")
-    query = "UPDATE player SET username=? WHERE username=?"
+    query = "UPDATE players SET username=? WHERE username=?"
     ctx.cursor.execute(query, (new, old))

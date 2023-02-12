@@ -17,7 +17,6 @@ fetch_fins.start() #deplaced outside of the function
 
 def fetch_player_fins(player: str) -> dict:
     url = CFG.api.endpoint.replace("USER", player) + CFG.api.edition
-    logger.debug(f"Fetching data for player: {player} via {url}")
+    logger.info(f"Fetching data for player: {player} via {url}")
     data = requests.get(url).json()
-    logger.debug("Sucessfully fetched data")
     return data

@@ -21,20 +21,19 @@ class KFADm(commands.Cog, name="DMCog"):
         """Adds player to be tracked"""
         logger.info(f"{ctx.author.name} wants to add user: {username}")
         data = fetch_player_fins(username)
+        s = None
         if not data:
             logger.warn(f"User {username} not found")
-            await ctx.send(f"User **{username}** doesn't exist")
+            s = f"User **{username}** doesn't exist"
         else:
-            await ctx.send("Processing data.. please wait")
             fins = _cleanup_fins(data)
             ret = dmops.add_player(username, fins)
-            logger.debug(f"Add player ret = {ret}")
             s = (
                 f"Added user: **{username}**"
                 if ret
                 else f"Couldn't add user: **{username}**. Contact djinner."
             )
-            await ctx.send(s)
+        await ctx.send(s)
 
     @commands.command(name="remove")
     @commands.dm_only()
