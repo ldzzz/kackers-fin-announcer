@@ -78,14 +78,15 @@ def build_announce_embed(player: tuple, fin: tuple) -> discord.Embed:
         url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         color=discord.Color.random(),
     )
-    fin_embed.set_thumbnail(url=CFG.thumbnails[int(fin[0].split()[0])])
-    fin_embed.add_field(name="Player", value=player[0], inline=True)
-    fin_embed.add_field(name="Map", value=f"#{fin[0]}", inline=True)
+    fin_embed.set_thumbnail(url=CFG.thumbnails.replace("MAPNR", fin[0].split()[0]))
+    fin_embed.add_field(name="Player", value=player[0])
     fin_embed.add_field(name="\u200B", value="\u200B")  # newline
-    fin_embed.add_field(name="Time", value=f"{fin[1] / 1000.0}s{delta}", inline=True)
-    fin_embed.add_field(name="Rank", value=fin[2], inline=True)
+    fin_embed.add_field(name="Map", value=f"#{fin[0]}")
+    fin_embed.add_field(name="Time", value=f"{fin[1] / 1000.0}s{delta}")
     fin_embed.add_field(name="\u200B", value="\u200B")  # newline
-    fin_embed.add_field(name="Total fins", value=f"{player[1]}/225", inline=True)
-    fin_embed.add_field(name="Date", value=f"<t:{int(fin[3])}:f>", inline=True)
+    fin_embed.add_field(name="Rank", value=fin[2])
+    fin_embed.add_field(name="Total fins", value=f"{player[1]}/225")
+    fin_embed.add_field(name="\u200B", value="\u200B")  # newline
+    fin_embed.add_field(name="Date", value=f"<t:{int(fin[3])}:f>")
     fin_embed.set_footer(text=f"Bot by djinn")
     return fin_embed
