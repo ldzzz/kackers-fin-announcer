@@ -9,7 +9,7 @@ logger = _get_module_logger(__name__)
 
 
 class KackersFinAnnouncer(commands.Bot):
-    _data = []  # TODO: move to db
+    _data = []  # TODO: move to db ??
 
     async def on_ready(self):
         # TODO: rework to save one guild one channel i think its fine for now

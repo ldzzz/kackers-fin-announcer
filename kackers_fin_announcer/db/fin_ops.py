@@ -9,7 +9,7 @@ logger = _get_module_logger(__name__)
 
 
 @DBConnection
-def update_or_create_fin(player, fin, ctx=None):
+def update_or_create_fin(player: str, fin: dict, ctx=None):
     try:
         query = "UPDATE user_fields SET alarms = ? WHERE id = ?"
         cur = ctx.connection.cursor()

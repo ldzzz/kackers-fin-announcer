@@ -1,7 +1,5 @@
-from botils.utils import CFG, _cleanup_fins, _get_module_logger
-from db.ctx_manager import DBConnection, KFADBConnection
-
-import mariadb
+from botils.utils import CFG, _get_module_logger
+from db.ctx_manager import DBConnection
 
 logger = _get_module_logger(__name__)
 
@@ -23,6 +21,7 @@ def add_player(player: str, fins: dict, ctx=None):
 
 @DBConnection
 def remove_player(player: str, ctx=None):
+    """Remove player & their finishes from database."""
     logger.debug(f"Remove called: player={player}, ctx={ctx}")
     query = "DELETE FROM player WHERE username=?"
     ctx.cursor.execute(query, (player,))
@@ -30,6 +29,7 @@ def remove_player(player: str, ctx=None):
 
 @DBConnection
 def update_username(old: str, new: str, ctx=None):
+    """Update player username in database."""
     logger.debug(f"Update called: {old}->{new}, ctx={ctx}")
     query = "UPDATE player SET username=? WHERE username=?"
     ctx.cursor.execute(query, (new, old))

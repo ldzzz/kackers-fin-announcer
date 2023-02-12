@@ -1,5 +1,5 @@
-from botils.utils import CFG, _get_module_logger
 import requests
+from botils.utils import CFG, _get_module_logger
 
 logger = _get_module_logger(__name__)
 
@@ -15,7 +15,7 @@ fetch_fins.start() #deplaced outside of the function
 """
 
 
-def fetch_player_fins(player):
+def fetch_player_fins(player: str) -> dict:
     url = CFG.api.endpoint.replace("USER", player) + CFG.api.edition
     logger.debug(f"Fetching data for player: {player} via {url}")
     data = requests.get(url).json()

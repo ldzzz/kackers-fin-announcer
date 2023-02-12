@@ -1,12 +1,12 @@
 import json
+import logging
 from pathlib import Path
 
 import discord
 import namedtupled
-import logging
 
 
-def _get_module_logger(mod_name):
+def _get_module_logger(mod_name: str) -> logging.Logger:
     """
     To use this, do logger = get_module_logger(__name__)
     """
@@ -32,7 +32,7 @@ def _load_config():
     logger.info("CFG loaded")
 
 
-def _cleanup_fins(fins):
+def _cleanup_fins(fins: dict):
     """Remove duplicate fins if [v2] of map exists"""
     logger.debug("Cleaning up finishes")
     v2s = list(filter(lambda x: "v2" in x, fins.keys()))
@@ -44,7 +44,7 @@ def _cleanup_fins(fins):
 
 
 # TODO: build db of thumbnails - urls?? or dl to local files ?? - worse prob for me
-def build_announce_embed(fin_data, rank) -> discord.Embed:
+def build_announce_embed(fin_data: dict) -> discord.Embed:
     logger.debug("Building announce embed")
     fin_embed = discord.Embed(
         title=":heart_eyes: NEW FINISH :heart_eyes:",
