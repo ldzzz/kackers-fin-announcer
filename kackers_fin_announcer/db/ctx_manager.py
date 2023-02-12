@@ -13,6 +13,7 @@ class KFADBConnection(object):
         self.cursor = None
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        err = False
         if exc_tb is None:
             self.connection.commit()
             logger.debug("Commited to database")
@@ -41,20 +42,11 @@ def DBConnection(func):
     """Decorator function that wraps the function in context manager statement"""
 
     def wrapper(*args):
-        ret = True
         try:
             with KFADBConnection() as ctx:
                 func(*args, ctx)
-                print("Yes function finished")
-            print("do i get here????")
         except ValueError:
-            print("before fals")
             return False
-            # ret = False
-        print("but do i get here ???????")
         return True
-        # finally:
-        #    print("in fiunally")
-        #    return ret
 
     return wrapper
