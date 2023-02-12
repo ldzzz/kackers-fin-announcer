@@ -1,14 +1,14 @@
 import sys
 
 from botils.utils import CFG, _get_module_logger
-from db.ctx_manager import KFADBConnection
+from db.ctx_manager import DBConnection
 
 import mariadb
 
 logger = _get_module_logger(__name__)
 
 
-@KFADBConnection()
+@DBConnection
 def update_or_create_fin(player, fin, ctx=None):
     try:
         query = "UPDATE user_fields SET alarms = ? WHERE id = ?"

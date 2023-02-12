@@ -1,7 +1,7 @@
-from discord import User
 from discord.ext import commands
-
-from botils.utils import _get_module_logger
+from botils.utils import _get_module_logger, _cleanup_fins
+from botils.fetch import fetch_player_fins
+import db.dm_ops as dmops
 
 logger = _get_module_logger(__name__)
 
@@ -20,7 +20,21 @@ class KFADm(commands.Cog, name="DMCog"):
     ):
         """Adds player to be tracked"""
         logger.info(f"{ctx.author.name} wants to add user: {username}")
-        await ctx.send(f"Added user: **{username}**")
+        data = fetch_player_fins(username)
+        if not data:
+            logger.warn(f"User {username} not found")
+            await ctx.send(f"User **{username}** doesn't exist")
+        else:
+            await ctx.send("Processing data.. please wait")
+            fins = _cleanup_fins(data)
+            ret = dmops.add_player(username, fins)
+            logger.debug(f"Add player ret = {ret}")
+            s = (
+                f"Added user: **{username}**"
+                if ret
+                else f"Couldn't add user: **{username}**. Contact djinner."
+            )
+            await ctx.send(s)
 
     @commands.command(name="remove")
     @commands.dm_only()
@@ -32,7 +46,14 @@ class KFADm(commands.Cog, name="DMCog"):
     ):
         """Removes player that was tracked"""
         logger.info(f"{ctx.author.name} wants to remove user: {username}")
-        await ctx.send(f"Removed user: **{username}**")
+        ret = dmops.remove_player(username)
+        logger.debug(f"Remove player ret = {ret}")
+        s = (
+            f"Removed user: **{username}**"
+            if ret
+            else f"Couldn't remove user: **{username}**. Contact djinner"
+        )
+        await ctx.send(s)
 
     @commands.command(name="update")
     @commands.dm_only()

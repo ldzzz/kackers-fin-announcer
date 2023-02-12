@@ -32,6 +32,17 @@ def _load_config():
     logger.info("CFG loaded")
 
 
+def _cleanup_fins(fins):
+    """Remove duplicate fins if [v2] of map exists"""
+    logger.debug("Cleaning up finishes")
+    v2s = list(filter(lambda x: "v2" in x, fins.keys()))
+    for map in v2s:
+        nr = map.split(" ")[0]
+        fins.pop(nr, None)
+    logger.debug("Done cleaning up finishes")
+    return fins
+
+
 # TODO: build db of thumbnails - urls?? or dl to local files ?? - worse prob for me
 def build_announce_embed(fin_data, rank) -> discord.Embed:
     logger.debug("Building announce embed")
@@ -43,7 +54,6 @@ def build_announce_embed(fin_data, rank) -> discord.Embed:
     fin_embed.set_thumbnail(
         url="https://kackyreloaded.com/cache/tracks/thumbnails/e1FSUJRB63Q8u7u4DMz1FJJuGyj.jpg"
     )
-    fin_embed.set
     fin_embed.add_field(name="Player", value="djinner", inline=False)
     fin_embed.add_field(name="Map", value="#2888", inline=True)
     fin_embed.add_field(name="Rank", value="1", inline=True)

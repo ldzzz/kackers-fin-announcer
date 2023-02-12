@@ -2,3 +2,4 @@ setuptools==67.2.0
 discord-py==2.1.0
 mariadb==1.1.5.post3
 namedtupled==0.3.3
+requests==2.25.1
