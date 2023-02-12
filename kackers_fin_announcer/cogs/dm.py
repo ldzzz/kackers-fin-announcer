@@ -1,7 +1,7 @@
-from discord.ext import commands
-from botils.utils import _get_module_logger, _cleanup_fins
-from botils.fetch import fetch_player_fins
 import db.dm_ops as dmops
+from botils.fetch import fetch_player_fins
+from botils.utils import _cleanup_fins, _get_module_logger
+from discord.ext import commands
 
 logger = _get_module_logger(__name__)
 
@@ -61,34 +61,19 @@ class KFADm(commands.Cog, name="DMCog"):
     async def update_user(
         self,
         ctx,
-        old_name: str = commands.parameter(description="Username to remove"),
-        new_name: str = commands.parameter(description="Username to track"),
+        old_name: str = commands.parameter(description="Old username"),
+        new_name: str = commands.parameter(description="New username"),
     ):
-        """Updates player name that is tracked"""
-        logger.info(
-            f"{ctx.author.name} wants to update user: {old_name} with {new_name}"
+        """Updates player username"""
+        logger.info(f"{ctx.author.name} wants to update user: {old_name}->{new_name}")
+        ret = dmops.update_username(old_name, new_name)
+        logger.debug(f"Remove player ret = {ret}")
+        s = (
+            f"Replaced **{old_name}** with **{new_name}** succesfully"
+            if ret
+            else f"Couldn't update user: **{old_name}**->**{new_name}**. Contact djinner"
         )
-        await ctx.send(f"Replaced **{old_name}** with **{new_name}** succesfully")
-
-    @commands.command(name="fins")
-    @commands.dm_only()
-    async def list_user_fins(
-        self,
-        ctx,
-        username: str = commands.parameter(description="Username of player"),
-    ):
-        """Lists player finishes"""
-        logger.info(f"{ctx.author.name} wants to list user: {username} finishes")
-        await ctx.send(f"Player: **{username}** has following finishes:")
-
-    @add_user.error
-    @update_user.error
-    @remove_user.error
-    @list_user_fins.error
-    async def flip_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            logger.debug(f"Invalid command received: {error}")
-            await ctx.send("Missing arguments. Please read !help")
+        await ctx.send(s)
 
 
 async def setup(bot):

@@ -1,5 +1,6 @@
-from botils.utils import CFG, _get_module_logger, _cleanup_fins
+from botils.utils import CFG, _cleanup_fins, _get_module_logger
 from db.ctx_manager import DBConnection, KFADBConnection
+
 import mariadb
 
 logger = _get_module_logger(__name__)
@@ -28,15 +29,7 @@ def remove_player(player: str, ctx=None):
 
 
 @DBConnection
-def update_player(player: str, ctx=None) -> bool:
-    # TODO: fetch player fins to also insert
-    fincount = 0
-    logger.debug(f"Update called: player={player}, ctx={ctx}")
-    """
-    try:
-        query = " INSERT IGNORE INTO player (username, fincount) VALUES (?, ?)"
-        ctx.cursor.execute(query, (player, fincount))
-        ctx.connnection.commit()
-    except mariadb.Error as e:
-        logger.error(f"Error querying database: {e}")
-    """
+def update_username(old: str, new: str, ctx=None):
+    logger.debug(f"Update called: {old}->{new}, ctx={ctx}")
+    query = "UPDATE player SET username=? WHERE username=?"
+    ctx.cursor.execute(query, (new, old))
