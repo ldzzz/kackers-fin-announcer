@@ -45,20 +45,47 @@ def _cleanup_fins(fins: dict):
     return ret
 
 
-# TODO: build db of thumbnails - urls?? or dl to local files ?? - worse prob for me
-def build_announce_embed(fin_data: dict) -> discord.Embed:
+# TODO: rewrite update all users fins in db then fetch from db new fins and updated fins ??????
+# TODO: why do i make my life harder
+def get_updated_fins(fetched_fins: list, db_fins: dict):
+    """For given player get new fins/PBs."""
+    new_fins = []
+    pb_fins = []
+    for m in fetched_fins[:2]:
+        # db_fins.pop(map[0], None)
+        print(m)
+        dbmap = db_fins.get(m[0], None)
+        if dbmap is not None:  # pb
+            if m[3] > dbmap["date"] and m[1] < dbmap["score"]:
+                delta = dbmap["score"] - m[1] + 1
+                pb_fins.append((delta,) + m[::-1])
+        else:  # new fin
+            new_fins.append(m)
+
+    return new_fins, pb_fins
+
+
+# TODO: this can use rewrite
+def build_announce_embed(player: tuple, fin: tuple) -> discord.Embed:
     logger.debug("Building announce embed")
+    mytitle = ":checkered_flag: NEW FINISH :checkered_flag:"
+    delta = ""
+    if len(fin) > 4:
+        delta = f" (-{fin[4] / 1000.0})"
+        mytitle = ":fire: NEW PB :fire:"
     fin_embed = discord.Embed(
-        title=":heart_eyes: NEW FINISH :heart_eyes:",
+        title=mytitle,
         url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         color=discord.Color.random(),
     )
-    fin_embed.set_thumbnail(
-        url="https://kackyreloaded.com/cache/tracks/thumbnails/e1FSUJRB63Q8u7u4DMz1FJJuGyj.jpg"
-    )
-    fin_embed.add_field(name="Player", value="djinner", inline=False)
-    fin_embed.add_field(name="Map", value="#2888", inline=True)
-    fin_embed.add_field(name="Rank", value="1", inline=True)
-    fin_embed.add_field(name="Total fins", value="225/225", inline=False)
+    fin_embed.set_thumbnail(url=CFG.thumbnails[int(fin[0].split()[0])])
+    fin_embed.add_field(name="Player", value=player[0], inline=True)
+    fin_embed.add_field(name="Map", value=f"#{fin[0]}", inline=True)
+    fin_embed.add_field(name="\u200B", value="\u200B")  # newline
+    fin_embed.add_field(name="Time", value=f"{fin[1] / 1000.0}s{delta}", inline=True)
+    fin_embed.add_field(name="Rank", value=fin[2], inline=True)
+    fin_embed.add_field(name="\u200B", value="\u200B")  # newline
+    fin_embed.add_field(name="Total fins", value=f"{player[1]}/225", inline=True)
+    fin_embed.add_field(name="Date", value=f"<t:{int(fin[3])}:f>", inline=True)
     fin_embed.set_footer(text=f"Bot by djinn")
     return fin_embed

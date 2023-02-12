@@ -20,13 +20,13 @@ class KFADm(commands.Cog, name="DMCog"):
     ):
         """Adds player to be tracked"""
         logger.info(f"{ctx.author.name} wants to add user: {username}")
-        data = fetch_player_fins(username)
+        print(ctx.author.name, ctx.author.id)
+        fins = fetch_player_fins(username)
         s = None
-        if not data:
+        if not fins:
             logger.warn(f"User {username} not found")
             s = f"User **{username}** doesn't exist"
         else:
-            fins = _cleanup_fins(data)
             ret = dmops.add_player(username, fins)
             s = (
                 f"Added user: **{username}**"

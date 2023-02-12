@@ -9,7 +9,7 @@ logger = _get_module_logger(__name__)
 
 
 class KackersFinAnnouncer(commands.Bot):
-    _data = []  # TODO: move to db ??
+    channel_id = None  # Which channel to report to, server is chosen from config
 
     async def on_ready(self):
         # TODO: rework to save one guild one channel i think its fine for now
@@ -18,7 +18,7 @@ class KackersFinAnnouncer(commands.Bot):
                 logger.info(f"Found server {guild.name}")
                 for ch in guild.text_channels:
                     if ch.name == CFG.bot.fin_channel:
-                        self._data.append({"guild_id": guild.id, "finch_id": ch.id})
+                        self.channel_id = ch.id
                         logger.info(f"Found {ch.name} in {guild.name}")
                         break
                 else:

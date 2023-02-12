@@ -44,9 +44,9 @@ def DBConnection(func):
     def wrapper(*args):
         try:
             with KFADBConnection() as ctx:
-                func(*args, ctx)
+                res = func(*args, ctx)
         except ValueError:
             return False
-        return True
+        return res or True
 
     return wrapper
