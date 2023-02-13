@@ -6,23 +6,25 @@ services:
       context: ..
       dockerfile: .devcontainer/Dockerfile
       args:
-        - UID=1000
-        - GID=1000
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
     tty: true
     volumes:
-      - ..:/workspace:cached
+      - ${WORKSPACE_PATH:-..}:/workspace:cached
     depends_on:
       - mariadb
 
   mariadb:
     image: mariadb:10.9.5
     environment:
-      MYSQL_ROOT_PASSWORD: secretrootpassword
-      MYSQL_USER: superuser
-      MYSQL_PASSWORD: secretpassword
-      MYSQL_DATABASE: finbot
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PW}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_USER_PW}
+      MYSQL_DATABASE: ${DB_DATABASE}
     volumes:
-      - ${PWD}/.devcontainer/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ${PWD}/.deploy/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ${PWD}/mariadb:/var/lib/mysql:rw
-    ports:
-      - 3306:3306
+
+networks:
+  default:
+    name: kfa-dev-network

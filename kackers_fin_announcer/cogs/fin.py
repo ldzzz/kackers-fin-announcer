@@ -20,12 +20,15 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
     @commands.is_owner()
     async def ping_pong(self, ctx):
         "Test command to assure bot can answer to channel"
-        await self.bot.get_channel(self.bot.channel_id).send("pong")
+        if ctx.channel.id == self.bot.channel_id:
+            await self.bot.get_channel(self.bot.channel_id).send("Yes I'm working")
 
     @tasks.loop(minutes=1)
     async def fetch_fins(self):
         players = finops.get_all_players()
-        print(players)
+        logger.info(players)
+        if isinstance(players, bool): # only on first run
+            players={}
         for username, id in players.items():
             fetched_fins = fetch_player_fins(username)
             db_fins = finops.get_player_fins(username)

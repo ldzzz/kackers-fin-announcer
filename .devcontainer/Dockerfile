@@ -2,7 +2,7 @@ FROM python:3.9-slim-bullseye
 
 ARG UID
 ARG GID
-ARG USERNAME=devUser
+ARG USERNAME=localUser
 ARG MARIADBVER=10.9.5
 
 # Force stdin, stdout & stderr to be totally unbuffered
@@ -11,7 +11,7 @@ ENV PYTHONUNBUFFERED 1
 # Don't write .pyc files in container
 ENV PYTHONDONTWRITEBYTECODE 1
 
-# Create docker non-root user
+# Create docker user
 RUN groupadd -g ${GID} ${USERNAME} \
     && useradd -m -u ${UID} -g ${USERNAME} ${USERNAME}
 

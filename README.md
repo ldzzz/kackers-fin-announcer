@@ -34,6 +34,8 @@ Database is created according to the `.devcontainer/init.sql`.
 
 ## **Deployment**
 
+For deployment a docker-compose has been created in `.deploy`.
+
 TBD
 
 
