@@ -42,7 +42,7 @@ async def main():
     )
     async with kfa:
         await load_extensions(kfa)
-        logger.info("Loaded extensions: {kfa.}")
+        logger.info(f"Loaded extensions: {CFG.bot.cogs}")
         await kfa.start(CFG.bot.token)
 
 

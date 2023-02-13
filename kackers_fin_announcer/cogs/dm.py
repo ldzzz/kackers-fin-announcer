@@ -19,8 +19,6 @@ class KFADm(commands.Cog, name="DMCog"):
         username: str = commands.parameter(description="Username to add"),
     ):
         """Adds player to be tracked"""
-        logger.info(f"{ctx.author.name} wants to add user: {username}")
-        print(ctx.author.name, ctx.author.id)
         fins = fetch_player_fins(username)
         s = None
         if not fins:
@@ -44,7 +42,6 @@ class KFADm(commands.Cog, name="DMCog"):
         username: str = commands.parameter(description="Username to remove"),
     ):
         """Removes player that was tracked"""
-        logger.info(f"{ctx.author.name} wants to remove user: {username}")
         ret = dmops.remove_player(username)
         logger.debug(f"Remove player ret = {ret}")
         s = (
@@ -64,7 +61,6 @@ class KFADm(commands.Cog, name="DMCog"):
         new_name: str = commands.parameter(description="New username"),
     ):
         """Updates player username"""
-        logger.info(f"{ctx.author.name} wants to update user: {old_name}->{new_name}")
         ret = dmops.update_username(old_name, new_name)
         logger.debug(f"Remove player ret = {ret}")
         s = (

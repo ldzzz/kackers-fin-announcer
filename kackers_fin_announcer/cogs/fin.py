@@ -16,6 +16,12 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
     def cog_unload(self):
         self.fetch_fins.cancel()
 
+    @commands.command(name="ping")
+    @commands.is_owner()
+    async def ping_pong(self, ctx):
+        "Test command to assure bot can answer to channel"
+        await self.bot.get_channel(self.bot.channel_id).send("pong")
+
     @tasks.loop(minutes=1)
     async def fetch_fins(self):
         players = finops.get_all_players()
@@ -24,8 +30,6 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
             fetched_fins = fetch_player_fins(username)
             db_fins = finops.get_player_fins(username)
             new_fins, pb_fins = get_updated_fins(fetched_fins, db_fins)
-            print("new fins", new_fins)
-            print("pb fins", pb_fins)
             # update database
             ret1 = finops.create_fins(id, new_fins)
             ret2 = finops.update_fins(id, pb_fins)
