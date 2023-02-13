@@ -1,7 +1,9 @@
 from botils.utils import CFG, _get_module_logger
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 import mariadb
-
 logger = _get_module_logger(__name__)
 
 
@@ -28,8 +30,8 @@ class KFADBConnection(object):
 
     def __enter__(self):
         self.connection = mariadb.connect(
-            user=CFG.db.user,
-            password=CFG.db.password,
+            user=os.getenv('DB_USER'),
+            password=os.getenv('DB_USER_PW'),
             host=CFG.db.host,
             port=CFG.db.port,
             database=CFG.db.database,

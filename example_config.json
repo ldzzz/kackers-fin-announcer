@@ -1,0 +1,28 @@
+{
+    "bot": {
+        "token": "secret-discord-bot-token",
+        "server_id": "server-id",
+        "fin_channel": "finish-announcements",
+        "cogs": [
+            "dm",
+            "fin"
+        ]
+    },
+    "db": {
+        "host": "mariadb",
+        "port": 3306,
+        "database": "finbot"
+    },
+    "api": "https://fetch.from.here/USER",
+    "thumbnails": "https://fetch.thumbnails.from.here/MAPNR.jpg",
+    "maps_exclude_list": [
+        "list",
+        "of",
+        "maps",
+        "to",
+        "exclude",
+        "on",
+        "finfetch",
+        "e.g. #12 in KR"
+    ]
+}

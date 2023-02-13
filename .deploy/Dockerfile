@@ -11,7 +11,7 @@ ENV PYTHONUNBUFFERED 1
 # Don't write .pyc files in container
 ENV PYTHONDONTWRITEBYTECODE 1
 
-# Create docker user
+# Create docker NAME
 RUN groupadd -g ${GID} ${NAME} \
     && useradd -m -u ${UID} -g ${NAME} ${NAME}
 
@@ -52,4 +52,4 @@ USER ${NAME}
 RUN echo "export PATH=/home/${NAME}/.local/bin:${PATH}" >> ~/.bashrc
 
 # Start shell
-ENTRYPOINT [ "/bin/bash" ]
+ENTRYPOINT [ "python3", "/workspace/kackers_fin_announcer/bot.py" ]

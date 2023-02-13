@@ -22,8 +22,7 @@ You can adjust the created containers by modifying `.devcontainer/devcontainer.j
 ***Note***:
 Database files are mapped to local host and will generally be placed in `${PWD}/mariadb`.
 
-In order to be able to rebuild the devcontainer and also allow database user to modify files, you need to update permissions of `mariadb/` folder on your host machine:
-* `sudo chown -R ${USER} mariadb/` 
+If you want to rebuild the container but keep the database files, you need to update permissions of `mariadb/` folder on your host machine:
 * `sudo chmod 755 -R mariadb/`
 
 This is due to MariaDB container being created with UID & GID of 999 (you can also add Dockerfile for the database container if you wish which sets correct permissions along the way).
@@ -35,7 +34,7 @@ Database is created according to the `.devcontainer/init.sql`.
 ## **Deployment**
 
 For deployment a docker-compose has been created in `.deploy`.
+`.deploy/docker-compose.yml` is reading the environment variables from the `.deploy/.env`. You need to create this file and place it within `.deploy`. 
+Take a look at `example.env` or `.devcontainer/.env` as a reference.
 
-TBD
-
-
+To deploy the bot run `docker compose -f .deploy/docker-compose.yml up`

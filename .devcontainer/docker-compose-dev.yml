@@ -8,7 +8,11 @@ services:
       args:
         - UID=${UID:-1000}
         - GID=${GID:-1000}
+        - NAME=${NAME:-devUser}
     tty: true
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_USER_PW=${DB_USER_PW}
     volumes:
       - ${WORKSPACE_PATH:-..}:/workspace:cached
     depends_on:
