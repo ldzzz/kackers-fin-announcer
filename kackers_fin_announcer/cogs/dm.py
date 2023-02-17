@@ -19,9 +19,11 @@ class KFADm(commands.Cog, name="DMCog"):
         username: str = commands.parameter(description="Username to add"),
     ):
         """Adds player to be tracked"""
-        fins = fetch_player_fins(username)
+        fins, error = fetch_player_fins(username)
+        if error:
+                await ctx.send(f"Kacky API not reachable?")
         s = None
-        if not fins:
+        if not fins and not error:
             logger.warn(f"User {username} not found")
             s = f"User **{username}** doesn't exist"
         else:

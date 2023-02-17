@@ -30,34 +30,35 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
         if isinstance(players, bool): # only on first run
             players={}
         for username, id in players.items():
-            fetched_fins = fetch_player_fins(username)
-            db_fins = finops.get_player_fins(username)
-            new_fins, pb_fins = get_updated_fins(fetched_fins, db_fins)
-            # update database
-            ret1 = finops.create_fins(id, new_fins)
-            ret2 = finops.update_fins(id, pb_fins)
-            # hopefully this will never be executed
-            if not (ret1 and ret2):
-                logger.error(
-                    f"Couldnt update some finishes for {username}. NEW FINS: {ret1}, PBS: {ret2}"
-                )
-                s = (
-                    f"DINKDONK bot finna fucking up. Djinn trash developer. Go fix.\n"
-                    f"Some new fins or PBs weren't updated for **{username}**\n"
-                    f"NEW: {new_fins}\n"
-                    f"PB: {pb_fins}"
-                )
-                await self.bot.get_channel(self.bot.channel_id).send(s)
-            # report finishes anyway
-            player_data = (username, len(fetched_fins))
-            for fin in new_fins:
-                await self.bot.get_channel(self.bot.channel_id).send(
-                    embed=build_announce_embed(player_data, fin)
-                )
-            for fin in pb_fins:
-                await self.bot.get_channel(self.bot.channel_id).send(
-                    embed=build_announce_embed(player_data, fin[::-1])
-                )
+            fetched_fins, error = fetch_player_fins(username)
+            if not error:
+                db_fins = finops.get_player_fins(username)
+                new_fins, pb_fins = get_updated_fins(fetched_fins, db_fins)
+                # update database
+                ret1 = finops.create_fins(id, new_fins)
+                ret2 = finops.update_fins(id, pb_fins)
+                # hopefully this will never be executed
+                if not (ret1 and ret2):
+                    logger.error(
+                        f"Couldnt update some finishes for {username}. NEW FINS: {ret1}, PBS: {ret2}"
+                    )
+                    s = (
+                        f"DINKDONK bot finna fucking up. Djinn trash developer. Go fix.\n"
+                        f"Some new fins or PBs weren't updated for **{username}**\n"
+                        f"NEW: {new_fins}\n"
+                        f"PB: {pb_fins}"
+                    )
+                    await self.bot.get_channel(self.bot.channel_id).send(s)
+                # report finishes anyway
+                player_data = (username, len(fetched_fins))
+                for fin in new_fins:
+                    await self.bot.get_channel(self.bot.channel_id).send(
+                        embed=build_announce_embed(player_data, fin)
+                    )
+                for fin in pb_fins:
+                    await self.bot.get_channel(self.bot.channel_id).send(
+                        embed=build_announce_embed(player_data, fin[::-1])
+                    )
 
     @fetch_fins.before_loop
     async def fetcher_before_loop(self):
