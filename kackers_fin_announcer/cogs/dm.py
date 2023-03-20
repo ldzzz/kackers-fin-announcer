@@ -29,7 +29,7 @@ class KFADm(commands.Cog, name="DMCog"):
         else:
             ret = dmops.add_player(username, fins)
             s = (
-                f"Added user: **{username}**"
+                f"Added user: **{username}** with **{len(fins)} fins**"
                 if ret
                 else f"Couldn't add user: **{username}**. Contact djinner."
             )

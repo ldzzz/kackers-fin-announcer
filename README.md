@@ -37,4 +37,4 @@ For deployment a docker-compose has been created in `.deploy`.
 `.deploy/docker-compose.yml` is reading the environment variables from the `.deploy/.env`. You need to create this file and place it within `.deploy`. 
 Take a look at `example.env` or `.devcontainer/.env` as a reference.
 
-To deploy the bot run `docker compose -f .deploy/docker-compose.yml up`
+To deploy the bot run `docker compose -f .deploy/docker-compose.yml up -d`

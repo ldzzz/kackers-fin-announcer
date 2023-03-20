@@ -1,9 +1,8 @@
-from botils.utils import CFG, build_announce_embed, get_updated_fins
-from discord.ext import commands, tasks
-import discord
 import db.fin_ops as finops
+import discord
 from botils.fetch import fetch_player_fins
-from botils.utils import _get_module_logger
+from botils.utils import CFG, _get_module_logger, build_announce_embed, get_updated_fins
+from discord.ext import commands, tasks
 
 logger = _get_module_logger(__name__)
 
@@ -23,12 +22,12 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
         if ctx.channel.id == self.bot.channel_id:
             await self.bot.get_channel(self.bot.channel_id).send("Yes I'm working")
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(minutes=2)
     async def fetch_fins(self):
         players = finops.get_all_players()
         logger.info(players)
-        if isinstance(players, bool): # only on first run
-            players={}
+        if isinstance(players, bool):  # only on first run
+            players = {}
         for username, id in players.items():
             fetched_fins, error = fetch_player_fins(username)
             if not error:
@@ -36,7 +35,9 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
                 new_fins, pb_fins = get_updated_fins(fetched_fins, db_fins)
                 # update database
                 ret1 = finops.create_fins(id, new_fins)
-                ret2 = finops.update_fins(id, pb_fins)
+                ret2 = True
+                if pb_fins:
+                    ret2 = finops.update_fins(id, list(zip(*pb_fins))[1])
                 # hopefully this will never be executed
                 if not (ret1 and ret2):
                     logger.error(
@@ -51,14 +52,11 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
                     await self.bot.get_channel(self.bot.channel_id).send(s)
                 # report finishes anyway
                 player_data = (username, len(fetched_fins))
-                for fin in new_fins:
+                for fin in new_fins + pb_fins:
                     await self.bot.get_channel(self.bot.channel_id).send(
                         embed=build_announce_embed(player_data, fin)
                     )
-                for fin in pb_fins:
-                    await self.bot.get_channel(self.bot.channel_id).send(
-                        embed=build_announce_embed(player_data, fin[::-1])
-                    )
+        logger.info("Done fetching all players")
 
     @fetch_fins.before_loop
     async def fetcher_before_loop(self):
