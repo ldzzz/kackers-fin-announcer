@@ -88,7 +88,7 @@ def build_announce_embed(player: tuple, fin: tuple) -> discord.Embed:
             "map": fin[1][-1],
             "username": player[0],
             "time": _score_to_string(fin[1][3], fin[1][0]),
-            "rank": f"{fin[1][2]} (-{fin[0][2] - fin[1][2]}.)",
+            "rank": f"{fin[1][2]} ({fin[1][2] - fin[0][2]}.)",
             "total_fins": f"{player[1]}/{CFG.mappack_count}",
             "date": f"<t:{int(fin[1][1])}:f>",
         }
