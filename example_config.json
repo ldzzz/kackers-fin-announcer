@@ -15,15 +15,5 @@
     },
     "api": "https://fetch.from.here/USER",
     "thumbnails": "https://fetch.thumbnails.from.here/MAPNR.jpg",
-    "maps_exclude_list": [
-        "list",
-        "of",
-        "maps",
-        "to",
-        "exclude",
-        "on",
-        "finfetch",
-        "e.g. #12 in KR"
-    ],
     "mappack_count": 225
 }

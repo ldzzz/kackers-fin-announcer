@@ -27,3 +27,14 @@ def update_username(old: str, new: str, ctx=None):
     """Update player username in database."""
     query = "UPDATE players SET username=? WHERE username=?"
     ctx.cursor.execute(query, (new, old))
+
+
+@DBConnection
+def get_all_players(ctx=None) -> dict:
+    """Gets all (username, fincount) from database"""
+    query = "SELECT username, fincount FROM players"
+    ctx.cursor.execute(query)
+    players = dict()
+    for username, fincount in ctx.cursor:
+        players[username] = fincount
+    return players

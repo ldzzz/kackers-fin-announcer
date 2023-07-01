@@ -34,11 +34,9 @@ def _load_config():
 
 
 def _cleanup_fins(fins: dict):
-    """Remove fins that have v2 versions (KR specific)"""
+    """Convert json data to tuples"""
     ret = []
     for map, data in fins.items():
-        if map in CFG.maps_exclude_list:
-            continue
         tmp = (map,) + tuple(data.values())
         ret.append(tmp)
     return ret
@@ -46,15 +44,14 @@ def _cleanup_fins(fins: dict):
 
 def _get_new_fins(fins: list):
     """Get fins by timestamp"""
-    last12hr_timestamp = (datetime.now() - timedelta(hours=12)).timestamp()
+    last6hr_timestamp = (datetime.now() - timedelta(hours=6)).timestamp()
     new_fins = []
     for fin in fins:
-        if fin[3] >= last12hr_timestamp:
+        if fin[3] >= last6hr_timestamp:
             new_fins.append(fin)
     return new_fins
 
 
-# TODO: get only new fins by timestamp, and here sort them out
 def get_updated_fins(fetched_fins: list, db_fins: dict):
     """For given player get new fins/PBs."""
     new_fins = []
@@ -110,9 +107,7 @@ def build_announce_embed(player: tuple, fin: tuple) -> discord.Embed:
         url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         color=discord.Color.random(),
     )
-    fin_embed.set_thumbnail(
-        url=CFG.thumbnails.replace("MAPNR", edata["map"].split()[0])
-    )
+    fin_embed.set_thumbnail(url=CFG.thumbnails.replace("MAPNR", edata["map"]))
     fin_embed.add_field(name="Player", value=edata["username"])
     fin_embed.add_field(name="\u200B", value="\u200B")  # newline
     fin_embed.add_field(name="Map", value=f"#{edata['map']}")

@@ -13,8 +13,8 @@ def fetch_player_fins(player: str) -> list:
             url=url,
             headers={
                 "User-Agent": "finbot 0.69",
-            }, 
-            timeout=1
+            },
+            timeout=1,
         )
         cleaned_data = _cleanup_fins(data.json())
         return cleaned_data, False

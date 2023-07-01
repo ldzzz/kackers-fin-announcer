@@ -1,6 +1,6 @@
 import db.dm_ops as dmops
 from botils.fetch import fetch_player_fins
-from botils.utils import _cleanup_fins, _get_module_logger
+from botils.utils import _get_module_logger
 from discord.ext import commands
 
 logger = _get_module_logger(__name__)
@@ -21,7 +21,7 @@ class KFADm(commands.Cog, name="DMCog"):
         """Adds player to be tracked"""
         fins, error = fetch_player_fins(username)
         if error:
-                await ctx.send(f"Kacky API not reachable?")
+            await ctx.send(f"Kacky API not reachable?")
         s = None
         if not fins and not error:
             logger.warn(f"User {username} not found")
@@ -70,6 +70,17 @@ class KFADm(commands.Cog, name="DMCog"):
             if ret
             else f"Couldn't update user: **{old_name}**->**{new_name}**. Contact djinner"
         )
+        await ctx.send(s)
+
+    @commands.command(name="list")
+    @commands.dm_only()
+    @commands.is_owner()
+    async def list_users(self, ctx):
+        players = dmops.get_all_players()
+        s = f"Total amount of registered players: **{len(players)}**\n"
+        print(players)
+        for name, fincount in players.items():
+            s += f"{name}: **{fincount}** fins\n"
         await ctx.send(s)
 
 
