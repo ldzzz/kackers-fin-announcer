@@ -14,6 +14,8 @@
         "database": "finbot"
     },
     "api": "https://fetch.from.here/USER",
+    "api_token": "secret-kacky-api-token",
     "thumbnails": "https://fetch.thumbnails.from.here/MAPNR.jpg",
-    "mappack_count": 225
+    "interval": 120,
+    "mappack_count": 300
 }

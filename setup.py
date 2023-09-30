@@ -7,7 +7,7 @@ setup(
     author="djinn",
     packages=find_packages(),
     install_requires=[
-        "discord-py" == "2.1.0",
+        "discord-py" == "2.3.2",
         "mariadb" == "1.1.5.post3",
         "namedtupled" == "0.3.3",
     ],

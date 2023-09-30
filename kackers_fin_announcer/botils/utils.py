@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
 import discord
@@ -33,55 +33,71 @@ def _load_config():
     logger.info("CFG loaded")
 
 
-def _cleanup_fins(fins: dict):
-    """Convert json data to tuples"""
+def _fins2tuple(fins: dict):
+    """Convert json finish data to tuples"""
     ret = []
     for map, data in fins.items():
         tmp = (map,) + tuple(data.values())
         ret.append(tmp)
     return ret
 
-
-def _get_new_fins(fins: list):
-    """Get fins by timestamp"""
-    last6hr_timestamp = (datetime.now() - timedelta(hours=6)).timestamp()
-    new_fins = []
-    for fin in fins:
-        if fin[3] >= last6hr_timestamp:
-            new_fins.append(fin)
-    return new_fins
-
+# TODO: now this is dumb, surely there is a better way
+def _fins2updatecreate(fins: dict, player_id: int):
+    """Convert json finish data to consumable tuples for update_or_create_finishes()"""
+    ret = []
+    for map, data in fins.items():
+        tmp = (map,) + tuple(data.values()) + (player_id, data["date"], data["score"], data["date"], data["kacky_rank"], data["score"], data["kacky_rank"], data["date"])
+        ret.append(tmp)
+    return ret
 
 def get_updated_fins(fetched_fins: list, db_fins: dict):
     """For given player get new fins/PBs."""
-    new_fins = []
-    pb_fins = []
-    updated_fins = _get_new_fins(fetched_fins)
-    for m in updated_fins:
-        dbmap = db_fins.get(m[0], None)
+    new_fins = {}
+    pb_fins = {}
+    # TODO: this can probably all be done in DB operations triggers, or so - need to check
+    for mapname, findata in fetched_fins.items():
+        dbmap = db_fins.get(map, None)
         if dbmap is not None:  # pb
-            if m[3] > dbmap["date"] and m[1] < dbmap["score"]:
-                delta = dbmap["score"] - m[1]
-                pb_fins.append(
-                    (tuple(dbmap.values())[::-1], (delta,) + m[::-1])
-                )  # old, new
+            if findata["date"] > dbmap["date"] and findata["score"] < dbmap["score"]:
+                findata["score_delta"] = dbmap["score"] - findata["score"]
+                findata["rank_delta"] = dbmap["rank"] - findata["kacky_rank"]
+                pb_fins[mapname] = findata
         else:  # new fin
-            new_fins.append(m)
+            new_fins[mapname] = findata
 
     return new_fins, pb_fins
 
 
-def _score_to_string(score: int, delta: int = None) -> str:
+def _score_to_string(score: int, delta: int) -> str:
     """Converts map score to a string with seconds representation."""
     diff = ""
     score_fmt = datetime.fromtimestamp(score / 1000.0).strftime("%M:%S.%f")[:-3]
-    if delta:
-        diff = f" (-{delta / 1000.0:.3f})"
+    if delta != 0:
+        diff = f"(-{delta / 1000.0:.3f})"
     return f"{score_fmt} {diff}"
 
 
-def build_announce_embed(player: tuple, fin: tuple) -> discord.Embed:
+def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
     logger.debug("Building announce embed")
+    is_new = fin["created_at"] == fin["updated_at"]
+    fin_embed = discord.Embed(
+        title=":checkered_flag: NEW FINISH :checkered_flag:" if is_new else ":fire: NEW PB :fire:",
+        url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        color=discord.Color.random(),
+    )
+    fin_embed.set_thumbnail(url=CFG.thumbnails.replace("MAPNR", fin["mapname"]))
+    fin_embed.add_field(name="Player", value=player["username"])
+    fin_embed.add_field(name="\u200B", value="\u200B")  # newline
+    fin_embed.add_field(name="Map", value=f"#{fin['mapname']}")
+    fin_embed.add_field(name="Time", value=_score_to_string(fin["score"], fin["score_delta"]))
+    fin_embed.add_field(name="\u200B", value="\u200B")  # newline
+    fin_embed.add_field(name="Rank", value=fin["rank"] if is_new else f"{fin['rank']}({fin['rank_delta']}.)")
+    fin_embed.add_field(name="Total fins", value=player["fincount"])
+    fin_embed.add_field(name="\u200B", value="\u200B")  # newline
+    fin_embed.add_field(name="Date", value= f"<t:{int(datetime.timestamp(fin['date']))}:f>")
+    fin_embed.set_footer(text=f"Bot by djinn")
+    return fin_embed
+    """
     if len(fin) == 2:
         edata = {
             "title": ":fire: NEW PB :fire:",
@@ -119,3 +135,4 @@ def build_announce_embed(player: tuple, fin: tuple) -> discord.Embed:
     fin_embed.add_field(name="Date", value=edata["date"])
     fin_embed.set_footer(text=f"Bot by djinn")
     return fin_embed
+"""

@@ -1,51 +1,43 @@
-from botils.utils import _get_module_logger
+from botils.utils import CFG, _fins2updatecreate, _get_module_logger
 from db.ctx_manager import DBConnection
 
 logger = _get_module_logger(__name__)
 
 
 @DBConnection
-def get_all_players(ctx=None) -> dict:
-    """Gets all (username, id) from database"""
+def get_all_players(ctx=None) -> list:
+    """Gets all (username, id) from database as a list of dicts."""
     query = "SELECT username, id FROM players"
     ctx.cursor.execute(query)
-    players = dict()
-    for username, id in ctx.cursor:
-        players[username] = id
+    players = ctx.cursor.fetchall()
     return players
 
+@DBConnection
+def update_or_create_finishes(player_id: int, fins: dict, ctx=None) -> None:
+    """Update or create finishes for the player named, also updates players' finish count."""
+    # update finishes
+    #fins = _fins2updatecreate(fins, player_id)
+    fins = [(666,1676404567.0, 74, 10000, 1, 1677404567.0, 6666,1677404567.0, 70, 6666, 20, 1677404567.0)] # TODO: dummy for testing, DELETE
+    query = ("INSERT INTO mapfins(mapname, date, rank, score, player_id) VALUES(?, FROM_UNIXTIME(?), ?, ?, ?) "
+            "ON DUPLICATE KEY UPDATE score_delta=IF(FROM_UNIXTIME(?) > date, score-?, score_delta),"
+            "rank_delta=IF(FROM_UNIXTIME(?) > date,?-CAST(rank AS SIGNED), rank_delta), score=?, rank=?, date=FROM_UNIXTIME(?);")
+    ctx.cursor.executemany(query, fins)
+    # update fincount
+    pquery = "UPDATE players SET fincount=(SELECT COUNT(*) FROM mapfins WHERE player_id=?) WHERE id=?"
+    ctx.cursor.execute(pquery, (player_id, player_id))
 
 @DBConnection
-def get_player_fins(player: str, ctx=None):
-    """Get all players' fins in database"""
-    query = "SELECT mapfins.mapname, mapfins.score, mapfins.rank, UNIX_TIMESTAMP(mapfins.date), mapfins.delta FROM mapfins INNER JOIN players ON mapfins.player_id=players.id WHERE players.username=?"
-    ctx.cursor.execute(query, (player,))
-    fins = {}
-    for mapname, score, rank, date, delta in ctx.cursor:
-        fins[mapname] = {
-            "score": score,
-            "kacky_rank": rank,
-            "date": date,
-            "delta": delta,
-        }
-    return fins
-
+def get_latest_finishes(player_id: int, ctx=None) -> list:
+    """Return a list of latest players finishes based off of CFG.interval."""
+    query = "SELECT * FROM mapfins WHERE player_id=? AND updated_at>=FROM_UNIXTIME(UNIX_TIMESTAMP() - ?);"
+    ctx.cursor.execute(query, (player_id, CFG.interval))
+    finishes = ctx.cursor.fetchall()
+    return finishes
 
 @DBConnection
-def update_fins(player_id: int, fins: list, ctx=None):
-    """Bulk update finishes in database (PB)"""
-    if fins:
-        query = f"UPDATE mapfins SET delta = ?, date = FROM_UNIXTIME(?), rank = ?, score = ? WHERE mapname=? AND player_id= {player_id}"
-        ctx.cursor.executemany(query, fins)
-
-
-@DBConnection
-def create_fins(player_id: str, fins: list, ctx=None):
-    """Bulk create finishes in database (new)"""
-    # create new fins
-    if fins:
-        fquery = f"INSERT INTO mapfins (mapname, score, rank, date, player_id)  VALUES (?, ?, ?, FROM_UNIXTIME(?), {player_id})"
-        ctx.cursor.executemany(fquery, fins)
-        # update fincount
-        pquery = f"UPDATE players SET fincount=fincount + ? WHERE id = ?"
-        ctx.cursor.execute(pquery, (len(fins), player_id))
+def get_player_finish_count(player_id: int, ctx=None) -> int:
+    """Return current finish count of a given player."""
+    query = "SELECT fincount FROM players WHERE id=?"
+    ctx.cursor.execute(query, (player_id,))
+    fincount = ctx.cursor.fetchone()["fincount"]
+    return fincount

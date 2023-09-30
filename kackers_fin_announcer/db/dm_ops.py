@@ -1,17 +1,16 @@
-from botils.utils import CFG, _get_module_logger
+from botils.utils import CFG, _fins2tuple, _get_module_logger
 from db.ctx_manager import DBConnection
 
 logger = _get_module_logger(__name__)
 
 
 @DBConnection
-def add_player(player: str, fins: list, ctx=None):
+def add_player(player: str, fins: dict, ctx=None):
     """Add player and their fetched finishes to database."""
-    fincount = len(fins)
+    fins = _fins2tuple(fins)
     pquery = "INSERT IGNORE INTO players (username, fincount) VALUES (?, ?)"
-    ctx.cursor.execute(pquery, (player, fincount))
-    fquery = f"INSERT INTO mapfins (mapname, score, rank, date, player_id) VALUES (?, ?, ?, FROM_UNIXTIME(?), {ctx.cursor.lastrowid})"
-    # bulk add all fins
+    ctx.cursor.execute(pquery, (player, len(fins)))
+    fquery = f"INSERT INTO mapfins (mapname, date, rank, score, player_id) VALUES (?, FROM_UNIXTIME(?), ?, ?, {ctx.cursor.lastrowid})"
     ctx.cursor.executemany(fquery, fins)
 
 
@@ -23,18 +22,9 @@ def remove_player(player: str, ctx=None):
 
 
 @DBConnection
-def update_username(old: str, new: str, ctx=None):
-    """Update player username in database."""
-    query = "UPDATE players SET username=? WHERE username=?"
-    ctx.cursor.execute(query, (new, old))
-
-
-@DBConnection
-def get_all_players(ctx=None) -> dict:
+def get_all_players(ctx=None) -> list:
     """Gets all (username, fincount) from database"""
     query = "SELECT username, fincount FROM players"
     ctx.cursor.execute(query)
-    players = dict()
-    for username, fincount in ctx.cursor:
-        players[username] = fincount
+    players = ctx.cursor.fetchall()
     return players

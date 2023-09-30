@@ -1,10 +1,10 @@
 import requests
-from botils.utils import CFG, _get_module_logger, _cleanup_fins
+from botils.utils import CFG, _get_module_logger
 
 logger = _get_module_logger(__name__)
 
 
-def fetch_player_fins(player: str) -> list:
+def fetch_player_finishes(player: str) -> dict:
     """Fetch player fins and convert to list of tuples"""
     url = CFG.api.replace("USER", player)
     logger.info(f"Fetching data for player: {player} via {url}")
@@ -13,11 +13,11 @@ def fetch_player_fins(player: str) -> list:
             url=url,
             headers={
                 "User-Agent": "finbot 0.69",
+                "X-ApiKey": CFG.api_token,
             },
             timeout=1,
         )
-        cleaned_data = _cleanup_fins(data.json())
-        return cleaned_data, False
+        return data.json()
     except Exception:
-        logger.error("Kacky API not reachable")
-        return None, True
+        logger.error("Kacky API not reachable?")
+        return {}

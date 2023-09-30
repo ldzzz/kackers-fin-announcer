@@ -1,5 +1,5 @@
 import db.dm_ops as dmops
-from botils.fetch import fetch_player_fins
+from botils.fetch import fetch_player_finishes
 from botils.utils import _get_module_logger
 from discord.ext import commands
 
@@ -19,21 +19,14 @@ class KFADm(commands.Cog, name="DMCog"):
         username: str = commands.parameter(description="Username to add"),
     ):
         """Adds player to be tracked"""
-        fins, error = fetch_player_fins(username)
-        if error:
-            await ctx.send(f"Kacky API not reachable?")
-        s = None
-        if not fins and not error:
-            logger.warn(f"User {username} not found")
-            s = f"User **{username}** doesn't exist"
+        if username in list(map(lambda player: player["username"], dmops.get_all_players())):
+            await ctx.send(f"Player **{username}** aleady added.")
+            return
+        fins = fetch_player_finishes(username)
+        if fins and dmops.add_player(username, fins):
+            await ctx.send(f"Added player: **{username}** with **{len(fins)} fins**.")
         else:
-            ret = dmops.add_player(username, fins)
-            s = (
-                f"Added user: **{username}** with **{len(fins)} fins**"
-                if ret
-                else f"Couldn't add user: **{username}**. Contact djinner."
-            )
-        await ctx.send(s)
+            await ctx.send(f"Couldn't add player: **{username}** (Player doesn't exist or Kacky API not reachable).")        
 
     @commands.command(name="remove")
     @commands.dm_only()
@@ -49,7 +42,7 @@ class KFADm(commands.Cog, name="DMCog"):
         s = (
             f"Removed user: **{username}**"
             if ret
-            else f"Couldn't remove user: **{username}**. Contact djinner"
+            else f"Couldn't remove user: **{username}**."
         )
         await ctx.send(s)
 
@@ -63,24 +56,17 @@ class KFADm(commands.Cog, name="DMCog"):
         new_name: str = commands.parameter(description="New username"),
     ):
         """Updates player username"""
-        ret = dmops.update_username(old_name, new_name)
-        logger.debug(f"Remove player ret = {ret}")
-        s = (
-            f"Replaced **{old_name}** with **{new_name}** succesfully"
-            if ret
-            else f"Couldn't update user: **{old_name}**->**{new_name}**. Contact djinner"
-        )
-        await ctx.send(s)
+        await ctx.invoke(self.bot.get_command('remove'), query=old_name)
+        await ctx.invoke(self.bot.get_command('add'), query=new_name)
 
     @commands.command(name="list")
     @commands.dm_only()
     @commands.is_owner()
     async def list_users(self, ctx):
         players = dmops.get_all_players()
-        s = f"Total amount of registered players: **{len(players)}**\n"
-        print(players)
-        for name, fincount in players.items():
-            s += f"{name}: **{fincount}** fins\n"
+        s = f"Total amount of registered players: **{len(players)}**\n\n"
+        for player in players:
+            s += f"{player['username']}: **{player['fincount']}**\n"
         await ctx.send(s)
 
 

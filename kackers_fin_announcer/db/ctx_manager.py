@@ -1,9 +1,11 @@
-from botils.utils import CFG, _get_module_logger
 import os
+
+from botils.utils import CFG, _get_module_logger
 from dotenv import load_dotenv
 
 load_dotenv()
 import mariadb
+
 logger = _get_module_logger(__name__)
 
 
@@ -36,7 +38,7 @@ class KFADBConnection(object):
             port=CFG.db.port,
             database=CFG.db.database,
         )
-        self.cursor = self.connection.cursor()
+        self.cursor = self.connection.cursor(dictionary=True)
         return self
 
 
@@ -44,11 +46,14 @@ def DBConnection(func):
     """Decorator function that wraps the function in context manager statement"""
 
     def wrapper(*args):
+        res = None
         try:
             with KFADBConnection() as ctx:
                 res = func(*args, ctx)
         except ValueError:
             return False
-        return res or True
+        if res is not None:
+            return res
+        return True
 
     return wrapper
