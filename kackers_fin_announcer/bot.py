@@ -1,4 +1,5 @@
 import asyncio
+from dis import disco
 from pathlib import Path
 
 import discord
@@ -9,25 +10,14 @@ logger = _get_module_logger(__name__)
 
 
 class KackersFinAnnouncer(commands.Bot):
-    channel_id = None  # Which channel to report to, server is chosen from config
-
+    channel = discord.Object(id=CFG.bot.channel_id)
+    server = discord.Object(id=CFG.bot.server_id)
+    
     async def on_ready(self):
-        # TODO: rework to save one guild one channel i think its fine for now
-        for guild in self.guilds:
-            if str(guild.id) == CFG.bot.server_id:
-                logger.info(f"Found server {guild.name}")
-                for ch in guild.text_channels:
-                    if ch.name == CFG.bot.fin_channel:
-                        self.channel_id = ch.id
-                        logger.info(f"Found {ch.name} in {guild.name}")
-                        break
-                else:
-                    logger.error(
-                        f"Didn't find channel {CFG.bot.get.fin_channel} in {guild.name}"
-                    )
-                break
-        else:
-            logger.error(f"Didn't find server with id: {CFG.bot.server_id}")
+        self.tree.clear_commands()
+        self.tree.copy_global_to(guild=self.server)
+        logger.info("Syncing bot commands")
+        await self.tree.sync()
 
 
 async def load_extensions(bot):
@@ -37,9 +27,7 @@ async def load_extensions(bot):
 
 async def main():
     kfa = KackersFinAnnouncer(
-        intents=discord.Intents(messages=True, guilds=True, message_content=True),
-        command_prefix="!",
-    )
+        intents=discord.Intents(messages=True, guilds=True, message_content=True), command_prefix="/")
     async with kfa:
         await load_extensions(kfa)
         logger.info(f"Loaded extensions: {CFG.bot.cogs}")

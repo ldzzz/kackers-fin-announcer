@@ -50,23 +50,6 @@ def _fins2updatecreate(fins: dict, player_id: int):
         ret.append(tmp)
     return ret
 
-def get_updated_fins(fetched_fins: list, db_fins: dict):
-    """For given player get new fins/PBs."""
-    new_fins = {}
-    pb_fins = {}
-    # TODO: this can probably all be done in DB operations triggers, or so - need to check
-    for mapname, findata in fetched_fins.items():
-        dbmap = db_fins.get(map, None)
-        if dbmap is not None:  # pb
-            if findata["date"] > dbmap["date"] and findata["score"] < dbmap["score"]:
-                findata["score_delta"] = dbmap["score"] - findata["score"]
-                findata["rank_delta"] = dbmap["rank"] - findata["kacky_rank"]
-                pb_fins[mapname] = findata
-        else:  # new fin
-            new_fins[mapname] = findata
-
-    return new_fins, pb_fins
-
 
 def _score_to_string(score: int, delta: int) -> str:
     """Converts map score to a string with seconds representation."""
@@ -97,42 +80,3 @@ def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
     fin_embed.add_field(name="Date", value= f"<t:{int(datetime.timestamp(fin['date']))}:f>")
     fin_embed.set_footer(text=f"Bot by djinn")
     return fin_embed
-    """
-    if len(fin) == 2:
-        edata = {
-            "title": ":fire: NEW PB :fire:",
-            "map": fin[1][-1],
-            "username": player[0],
-            "time": _score_to_string(fin[1][3], fin[1][0]),
-            "rank": f"{fin[1][2]} ({fin[1][2] - fin[0][2]}.)",
-            "total_fins": f"{player[1]}/{CFG.mappack_count}",
-            "date": f"<t:{int(fin[1][1])}:f>",
-        }
-    else:
-        edata = {
-            "title": ":checkered_flag: NEW FINISH :checkered_flag:",
-            "map": fin[0],
-            "username": player[0],
-            "time": _score_to_string(fin[1], None),
-            "rank": fin[2],
-            "total_fins": f"{player[1]}/{CFG.mappack_count}",
-            "date": f"<t:{int(fin[3])}:f>",
-        }
-    fin_embed = discord.Embed(
-        title=edata["title"],
-        url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        color=discord.Color.random(),
-    )
-    fin_embed.set_thumbnail(url=CFG.thumbnails.replace("MAPNR", edata["map"]))
-    fin_embed.add_field(name="Player", value=edata["username"])
-    fin_embed.add_field(name="\u200B", value="\u200B")  # newline
-    fin_embed.add_field(name="Map", value=f"#{edata['map']}")
-    fin_embed.add_field(name="Time", value=edata["time"])
-    fin_embed.add_field(name="\u200B", value="\u200B")  # newline
-    fin_embed.add_field(name="Rank", value=edata["rank"])
-    fin_embed.add_field(name="Total fins", value=edata["total_fins"])
-    fin_embed.add_field(name="\u200B", value="\u200B")  # newline
-    fin_embed.add_field(name="Date", value=edata["date"])
-    fin_embed.set_footer(text=f"Bot by djinn")
-    return fin_embed
-"""

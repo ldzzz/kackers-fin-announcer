@@ -16,8 +16,7 @@ def get_all_players(ctx=None) -> list:
 def update_or_create_finishes(player_id: int, fins: dict, ctx=None) -> None:
     """Update or create finishes for the player named, also updates players' finish count."""
     # update finishes
-    #fins = _fins2updatecreate(fins, player_id)
-    fins = [(666,1676404567.0, 74, 10000, 1, 1677404567.0, 6666,1677404567.0, 70, 6666, 20, 1677404567.0)] # TODO: dummy for testing, DELETE
+    fins = _fins2updatecreate(fins, player_id)
     query = ("INSERT INTO mapfins(mapname, date, rank, score, player_id) VALUES(?, FROM_UNIXTIME(?), ?, ?, ?) "
             "ON DUPLICATE KEY UPDATE score_delta=IF(FROM_UNIXTIME(?) > date, score-?, score_delta),"
             "rank_delta=IF(FROM_UNIXTIME(?) > date,?-CAST(rank AS SIGNED), rank_delta), score=?, rank=?, date=FROM_UNIXTIME(?);")
@@ -29,7 +28,7 @@ def update_or_create_finishes(player_id: int, fins: dict, ctx=None) -> None:
 @DBConnection
 def get_latest_finishes(player_id: int, ctx=None) -> list:
     """Return a list of latest players finishes based off of CFG.interval."""
-    query = "SELECT * FROM mapfins WHERE player_id=? AND updated_at>=FROM_UNIXTIME(UNIX_TIMESTAMP() - ?);"
+    query = "SELECT * FROM mapfins WHERE player_id=? AND date>=FROM_UNIXTIME(UNIX_TIMESTAMP() - ?);"
     ctx.cursor.execute(query, (player_id, CFG.interval))
     finishes = ctx.cursor.fetchall()
     return finishes

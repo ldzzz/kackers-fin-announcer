@@ -1,6 +1,6 @@
 import db.fin_ops as finops
 from botils.fetch import fetch_player_finishes
-from botils.utils import CFG, _get_module_logger, build_announce_embed, get_updated_fins
+from botils.utils import CFG, _get_module_logger, build_announce_embed
 from discord.ext import commands, tasks
 
 logger = _get_module_logger(__name__)
@@ -23,11 +23,9 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
             if fetched_fins:
                 finops.update_or_create_finishes(player["id"], fetched_fins)
                 player["fincount"] = finops.get_player_finish_count(player["id"])
-                print('player data', player)
                 latest_fins = finops.get_latest_finishes(player["id"])
-                print('latest fins:', latest_fins)
                 for fin in latest_fins:
-                    await self.bot.get_channel(self.bot.channel_id).send(
+                    await self.bot.get_channel(self.bot.channel.id).send(
                         embed=build_announce_embed(player, fin)
                     )
         logger.info("Done fetching all players")
