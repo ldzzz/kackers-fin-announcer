@@ -17,5 +17,6 @@
     "api_token": "secret-kacky-api-token",
     "thumbnails": "https://fetch.thumbnails.from.here/MAPNR.jpg",
     "interval": 120,
+    "PB_limit": 5,
     "mappack_count": 300
 }
