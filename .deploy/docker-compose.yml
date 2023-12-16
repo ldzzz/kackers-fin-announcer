@@ -2,6 +2,7 @@ version: '3'
 
 services:
   finbot:
+    container_name: finBOT
     build:  
       context: ..
       dockerfile: .deploy/Dockerfile
@@ -26,6 +27,7 @@ services:
 
   mariadb:
     image: mariadb:10.9.5
+    container_name: finbotDB
     restart: "always"
     logging:
       driver: "json-file"

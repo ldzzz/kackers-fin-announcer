@@ -3,7 +3,6 @@ FROM python:3.9-slim-bullseye
 ARG UID
 ARG GID
 ARG NAME
-ARG MARIADBVER=10.9.5
 
 # Force stdin, stdout & stderr to be totally unbuffered
 ENV PYTHONUNBUFFERED 1
@@ -21,11 +20,6 @@ RUN apt -y update \
     && apt -y --no-install-recommends install \
     wget curl git ca-certificates build-essential
 
-# Pull MariaDB connector cus bullseye is apparently too old already
-RUN wget https://downloads.mariadb.com/MariaDB/mariadb_repo_setup
-RUN chmod +x mariadb_repo_setup
-RUN ./mariadb_repo_setup \ --mariadb-server-version="mariadb-${MARIADBVER}"
-RUN apt install -y libmariadb3 libmariadb-dev
 
 # Install requirements
 COPY requirements.txt /workspace/requirements.txt

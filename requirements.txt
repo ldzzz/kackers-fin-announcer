@@ -1,6 +1,5 @@
 setuptools==68.2.2
 discord-py==2.3.2
-mariadb==1.1.5.post3
 namedtupled==0.3.3
 requests==2.31.0
 python-dotenv==0.21.1

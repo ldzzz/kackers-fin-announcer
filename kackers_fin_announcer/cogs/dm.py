@@ -1,7 +1,7 @@
-import db.dm_ops as dmops
+import botils.shelfer as std
 import discord
 from botils.fetch import fetch_player_finishes
-from botils.utils import _get_module_logger
+from botils.utils import _create_embed, _get_module_logger
 from discord import app_commands
 from discord.ext import commands
 
@@ -14,24 +14,36 @@ class KFADm(commands.Cog, name="DMCog"):
         super().__init__()
 
     @app_commands.command(name="add")
-    async def add_user(
-        self,
-        interaction: discord.Interaction,
-        username: str
-    )-> None:
+    async def add_user(self, interaction: discord.Interaction, username: str) -> None:
         """Add a player to be tracked
 
         Args:
             username (str): Ubisoft username
         """
-        if username in list(map(lambda player: player["username"], dmops.get_all_players())):
-            await interaction.response.send_message(f"Player **{username}** aleady added.")
+        await interaction.response.defer(thinking=True)
+        if username in std.get_all_players():
+            await interaction.followup.send(
+                embed=_create_embed(title=f"Player already added")
+            )
             return
         fins = fetch_player_finishes(username)
-        if fins and dmops.add_player(username, fins):
-            await interaction.response.send_message(f"Added player: **{username}** with **{len(fins)} fins**.")
+        if fins:
+            std.add_or_update_player(username, fins)
+            await interaction.followup.send(
+                embed=_create_embed(
+                    title=f"Player added",
+                    data={"Player name": username, "Finish count": len(fins)},
+                )
+            )
         else:
-            await interaction.response.send_message(f"Couldn't add player: **{username}** (Player doesn't exist or Kacky API not reachable).")        
+            await interaction.followup.send(
+                embed=_create_embed(
+                    title=f"Player not added",
+                    data={
+                        "Comment": "Player doesn't exist or Kacky API not reachable."
+                    },
+                )
+            )
 
     @app_commands.command(name="remove")
     async def remove_user(
@@ -44,14 +56,10 @@ class KFADm(commands.Cog, name="DMCog"):
         Args:
             username (str): Ubisoft username
         """
-        ret = dmops.remove_player(username)
-        logger.debug(f"Remove player ret = {ret}")
-        s = (
-            f"Removed user: **{username}**"
-            if ret
-            else f"Couldn't remove user: **{username}**."
-        )
-        await interaction.response.send_message(s)
+        await interaction.response.defer(thinking=True)
+        logger.info(f"Remove player {username}")
+        std.delete_player(username)
+        await interaction.followup.send(embed=_create_embed(title="Player removed"))
 
     @app_commands.command(name="update")
     async def update_user(
@@ -66,19 +74,27 @@ class KFADm(commands.Cog, name="DMCog"):
             old_name (str): Old username
             new_name (str): New username
         """
-        await self.invoke(self.bot.get_command('remove'), query=old_name)
-        await self.invoke(self.bot.get_command('add'), query=new_name)
-        await interaction.response.send_message(f"Changed username from **{old_name}** to **{new_name}**")
+        await interaction.response.defer(thinking=True)
+        std.update_username(old_name, new_name)
+        await interaction.followup.send(
+            embed=_create_embed(title=f"Player name changed")
+        )
 
     @app_commands.command(name="list")
     async def list_players(self, interaction: discord.Interaction) -> None:
-        """List all registered players
-        """
-        players = dmops.get_all_players()
-        s = f"Total amount of registered players: **{len(players)}**\n\n"
-        for player in players:
-            s += f"{player['username']}: **{player['fincount']}**\n"
-        await interaction.response.send_message(s)
+        """List all registered players"""
+        await interaction.response.defer(thinking=True)
+        data = std.get_all_data()
+        names, fins = "", ""
+        for player in list(data.keys()):
+            names += f"{player}\n"
+            fins += f"**{len(data[player])}**\n"
+        await interaction.followup.send(
+            embed=_create_embed(
+                title=f"Registered players ({len(list(data.keys()))})",
+                data={"Name": names, "Finish count": fins},
+            )
+        )
 
 
 async def setup(bot):

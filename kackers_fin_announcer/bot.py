@@ -1,6 +1,4 @@
 import asyncio
-from dis import disco
-from pathlib import Path
 
 import discord
 from botils.utils import CFG, _get_module_logger
@@ -14,10 +12,10 @@ class KackersFinAnnouncer(commands.Bot):
     server = discord.Object(id=CFG.bot.server_id)
     
     async def on_ready(self):
-        self.tree.clear_commands()
+        self.tree.clear_commands(guild=self.server)
         self.tree.copy_global_to(guild=self.server)
-        logger.info("Syncing bot commands")
         await self.tree.sync()
+        logger.info("Synced bot commands")
 
 
 async def load_extensions(bot):

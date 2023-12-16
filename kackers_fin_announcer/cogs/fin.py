@@ -1,6 +1,13 @@
-import db.fin_ops as finops
+import datetime
+
+import botils.shelfer as std
 from botils.fetch import fetch_player_finishes
-from botils.utils import CFG, _get_module_logger, build_announce_embed
+from botils.utils import (
+    CFG,
+    _get_module_logger,
+    build_announce_embed,
+    get_latest_finishes,
+)
 from discord.ext import commands, tasks
 
 logger = _get_module_logger(__name__)
@@ -16,18 +23,18 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
 
     @tasks.loop(seconds=CFG.interval)
     async def fetch_finishes(self):
-        players = finops.get_all_players()
-        logger.info(players)
-        for player in players:
-            fetched_fins = fetch_player_finishes(player["username"])
-            if fetched_fins:
-                finops.update_or_create_finishes(player["id"], fetched_fins)
-                player["fincount"] = finops.get_player_finish_count(player["id"])
-                latest_fins = finops.get_latest_finishes(player["id"])
-                for fin in latest_fins:
-                    await self.bot.get_channel(self.bot.channel.id).send(
-                        embed=build_announce_embed(player, fin)
+        current_timestamp = datetime.datetime.now().timestamp()
+        players = std.get_all_data()
+        for player, fins in players.items():
+            fetched_fins = fetch_player_finishes(player)
+            nfpb = get_latest_finishes(fins, fetched_fins, current_timestamp)
+            for fin in nfpb:
+                await self.bot.get_channel(self.bot.channel.id).send(
+                    embed=build_announce_embed(
+                        {"username": player, "fincount": len(fetched_fins)}, fin
                     )
+                )
+            std.add_or_update_player(player, fetched_fins)
         logger.info("Done fetching all players")
 
     @fetch_finishes.before_loop

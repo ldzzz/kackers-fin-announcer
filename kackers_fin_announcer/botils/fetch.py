@@ -5,7 +5,7 @@ logger = _get_module_logger(__name__)
 
 
 def fetch_player_finishes(player: str) -> dict:
-    """Fetch player fins and convert to list of tuples"""
+    """Fetch player fins and return it as a dictionary"""
     url = CFG.api.replace("USER", player)
     logger.info(f"Fetching data for player: {player} via {url}")
     try:
