@@ -13,10 +13,11 @@
         "port": 3306,
         "database": "finbot"
     },
+    "storage": "/workspace/data/finStorage",
     "api": "https://fetch.from.here/USER",
     "api_token": "secret-kacky-api-token",
     "thumbnails": "https://fetch.thumbnails.from.here/MAPNR.jpg",
     "interval": 120,
-    "PB_limit": 5,
+    "pb_limit": 5,
     "mappack_count": 300
 }

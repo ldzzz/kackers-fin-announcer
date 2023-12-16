@@ -20,7 +20,6 @@ RUN apt -y update \
     && apt -y --no-install-recommends install \
     wget curl git ca-certificates build-essential
 
-
 # Install requirements
 COPY requirements.txt /workspace/requirements.txt
 WORKDIR /workspace

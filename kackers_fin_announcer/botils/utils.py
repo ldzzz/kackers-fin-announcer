@@ -57,7 +57,6 @@ def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
         url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         color=discord.Color.random(),
     )
-    print(fin)
     fin_embed.set_thumbnail(url=CFG.thumbnails.replace("MAPNR", fin["mapname"]))
     fin_embed.add_field(name="Player", value=player["username"])
     fin_embed.add_field(name="\u200B", value="\u200B")  # newline

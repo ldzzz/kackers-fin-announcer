@@ -10,41 +10,12 @@ services:
         - UID=${UID}
         - GID=${GID}
         - NAME=${NAME}
-    environment:
-      DB_USER: ${DB_USER}
-      DB_USER_PW: ${DB_USER_PW}
-      WORKDIR: ${WORKDIR}
     volumes:
       - ${WORKDIR}:/workspace:cached
-    depends_on:
-      - mariadb
+      - ${WORKDIR}/data:/workspace/data:rw
     restart: "unless-stopped"
     logging:
       driver: "json-file"
       options:
         max-size: 10m
         max-file: "3"
-
-  mariadb:
-    image: mariadb:10.9.5
-    container_name: finbotDB
-    restart: "always"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 10m
-        max-file: "3"
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PW}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_USER_PW}
-      MYSQL_DATABASE: ${DB_DATABASE}
-      WORKDIR: ${WORKDIR}
-      DB_PATH: ${DB_PATH}
-    volumes:
-      - ${WORKDIR}/.deploy/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ${WORKDIR}/${DB_PATH}/mariadb:/var/lib/mysql:rw
-
-networks:
-  default:
-    name: kfa-deploy-network
