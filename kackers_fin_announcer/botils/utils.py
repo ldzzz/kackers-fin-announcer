@@ -57,10 +57,10 @@ def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
         url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         color=discord.Color.random(),
     )
-    fin_embed.set_thumbnail(url=CFG.thumbnails.replace("MAPNR", fin["mapname"]))
+    fin_embed.set_thumbnail(url=CFG.thumbnails.replace("MAPNR", fin["mapnr"]))
     fin_embed.add_field(name="Player", value=player["username"])
     fin_embed.add_field(name="\u200B", value="\u200B")  # newline
-    fin_embed.add_field(name="Map", value=f"#{fin['mapname']}")
+    fin_embed.add_field(name="Map", value=f"#{fin['mapnr']}")
     fin_embed.add_field(
         name="Time", value=_score_to_string(fin["score"], fin.get("score_delta", None))
     )
@@ -77,44 +77,37 @@ def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
     return fin_embed
 
 
-def get_latest_finishes(old, new, timestamp):
-    """Gets latest finishes based on timestamp and interval of the checks.
+def get_latest_finishes(old, new):
+    """Gets latest finishes.
 
     Args:
         old         (dict): Current player finishes
         new         (dict): Fetched player finishes
-        timestamp   (datetime): Timestamp of the scheduled fetched start
 
     Returns:
         list: list of new and PB finishes
     """
-    latest = list(
-        filter(
-            lambda k: new[k]["date"] >= (timestamp - CFG.interval),
-            new,
-        )
-    )
     ret = []
-    for mapname in latest:
-        if mapname not in list(old.keys()):
-            # add new finish found
-            new[mapname]["mapname"] = mapname
-            ret.append(new[mapname])
-        elif new[mapname]["kacky_rank"] <= CFG.pb_limit:
+    for mapnr, mapdata in new.items():
+        # add new finish found
+        if mapnr not in list(old.keys()):
+            mapdata["mapnr"] = mapnr
+            ret.append(mapdata)
+        # add new PB if <= CFG.pb_limit and fresh
+        elif mapdata["date"] > old[mapnr]["date"] and mapdata["score"] < old[mapnr]["score"] and mapdata["kacky_rank"] <= CFG.pb_limit:
             # prepare PB data
-            new[mapname]["mapname"] = mapname
-            score_delta = old[mapname]["score"] - new[mapname]["score"]
-            # detect abnormalities
-            if score_delta < 0:
-                # if abnormality detected, treat it as a new fin (probably a v2 of a map)
-                logger.error(
-                    f"Abnormality detected for {mapname}\nOLD: {old[mapname]}\nNEW: {new[mapname]}"
+            mapdata["mapnr"] = mapnr
+            score_delta = old[mapnr]["score"] - mapdata["score"]
+            # detect abnormalities (e.g. v2 map issues)
+            if score_delta > 0:
+                mapdata["score_delta"] = score_delta
+                mapdata["rank_delta"] = (
+                    mapdata["kacky_rank"] - old[mapnr]["kacky_rank"]
                 )
-                ret.append(new[mapname])
-                continue
-            new[mapname]["score_delta"] = score_delta
-            new[mapname]["rank_delta"] = (
-                new[mapname]["kacky_rank"] - old[mapname]["kacky_rank"]
-            )
-            ret.append(new[mapname])
+                ret.append(mapdata)
+            else:
+                # if abnormality detected, do nothing, report error
+                logger.error(
+                    f"Abnormality detected for {mapnr}\nOLD: {old[mapnr]}\nNEW: {mapdata}"
+                )
     return ret

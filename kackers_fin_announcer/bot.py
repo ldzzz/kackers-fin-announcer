@@ -10,12 +10,13 @@ logger = _get_module_logger(__name__)
 class KackersFinAnnouncer(commands.Bot):
     channel = discord.Object(id=CFG.bot.channel_id)
     server = discord.Object(id=CFG.bot.server_id)
-    
+    synced = False
+
     async def on_ready(self):
-        self.tree.clear_commands(guild=self.server)
-        self.tree.copy_global_to(guild=self.server)
-        await self.tree.sync()
-        logger.info("Synced bot commands")
+        if not self.synced:
+            await self.tree.sync()
+            logger.info("Synced bot commands")
+            self.synced = True
 
 
 async def load_extensions(bot):
