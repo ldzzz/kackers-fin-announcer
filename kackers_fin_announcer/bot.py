@@ -8,7 +8,7 @@ logger = _get_module_logger(__name__)
 
 
 class KackersFinAnnouncer(commands.Bot):
-    channel = discord.Object(id=CFG.bot.channel_id)
+    fin_channel = discord.Object(id=CFG.bot.finannouncement_channel)
     server = discord.Object(id=CFG.bot.server_id)
     synced = False
 
@@ -26,7 +26,9 @@ async def load_extensions(bot):
 
 async def main():
     kfa = KackersFinAnnouncer(
-        intents=discord.Intents(messages=True, guilds=True, message_content=True), command_prefix="/")
+        intents=discord.Intents(messages=True, guilds=True, message_content=True),
+        command_prefix="/",
+    )
     async with kfa:
         await load_extensions(kfa)
         logger.info(f"Loaded extensions: {CFG.bot.cogs}")

@@ -15,9 +15,11 @@ def fetch_player_finishes(player: str) -> dict:
                 "User-Agent": "finbot 0.69",
                 "X-ApiKey": CFG.api_token,
             },
-            timeout=1,
+            timeout=5,
         )
-        return data.json()
-    except Exception:
-        logger.error("Kacky API not reachable?")
+        ret = data.json()
+        return ret
+    except Exception as e:
+        logger.error("Kacky API not reachable or json not serializable?")
+        logger.error(e)
         return {}

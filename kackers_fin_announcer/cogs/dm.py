@@ -59,7 +59,9 @@ class KFADm(commands.Cog, name="DMCog"):
         await interaction.response.defer(thinking=True)
         logger.info(f"Remove player {username}")
         std.delete_player(username)
-        await interaction.followup.send(embed=_create_embed(title="Player removed"))
+        await interaction.followup.send(
+            embed=_create_embed(title=f"{username} removed")
+        )
 
     @app_commands.command(name="update")
     async def update_user(

@@ -51,9 +51,11 @@ def _score_to_string(score: int, delta: int) -> str:
 def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
     logger.debug("Building announce embed")
     fin_embed = discord.Embed(
-        title=":checkered_flag: NEW FINISH :checkered_flag:"
-        if "score_delta" not in fin.keys()
-        else ":fire: NEW TOP 5 :fire:",
+        title=(
+            ":checkered_flag: NEW FINISH :checkered_flag:"
+            if "score_delta" not in fin.keys()
+            else ":fire: NEW TOP 5 :fire:"
+        ),
         url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         color=discord.Color.random(),
     )
@@ -94,16 +96,18 @@ def get_latest_finishes(old, new):
             mapdata["mapnr"] = mapnr
             ret.append(mapdata)
         # add new PB if <= CFG.pb_limit and fresh
-        elif mapdata["date"] > old[mapnr]["date"] and mapdata["score"] < old[mapnr]["score"] and mapdata["kacky_rank"] <= CFG.pb_limit:
+        elif (
+            mapdata["date"] > old[mapnr]["date"]
+            and mapdata["score"] < old[mapnr]["score"]
+            and mapdata["kacky_rank"] <= CFG.pb_limit
+        ):
             # prepare PB data
             mapdata["mapnr"] = mapnr
             score_delta = old[mapnr]["score"] - mapdata["score"]
             # detect abnormalities (e.g. v2 map issues)
             if score_delta > 0:
                 mapdata["score_delta"] = score_delta
-                mapdata["rank_delta"] = (
-                    mapdata["kacky_rank"] - old[mapnr]["kacky_rank"]
-                )
+                mapdata["rank_delta"] = mapdata["kacky_rank"] - old[mapnr]["kacky_rank"]
                 ret.append(mapdata)
             else:
                 # if abnormality detected, do nothing, report error

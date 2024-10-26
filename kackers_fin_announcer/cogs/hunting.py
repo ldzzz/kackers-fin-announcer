@@ -19,26 +19,30 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
     def cog_unload(self):
         self.fetch_finishes.cancel()
 
-    @tasks.loop(seconds=CFG.interval)
+    @tasks.loop(minutes=CFG.interval)
     async def fetch_finishes(self):
         players = std.get_all_data()
         for player, fins in players.items():
             fetched_fins = fetch_player_finishes(player)
             # skip if Kacky-API failed at any point
             if not fetched_fins:
-                logger.error(f"This doesnt look right:\n{player}: old_cnt={len(fins.keys())}, new_cnt={len(fetched_fins.keys())} -> Skipping")
+                logger.error(
+                    f"This doesnt look right:\n{player}: old_cnt={len(fins.keys())}, new_cnt={len(fetched_fins.keys())} -> Skipping"
+                )
                 continue
             nfpb = get_latest_finishes(fins, fetched_fins)
             # self-correct if writing to file failed at any point
             if len(fetched_fins.keys()) // 2 > len(fins.keys()):
-                logger.error(f"This doesnt look right:\n{player}: old_cnt={len(fins.keys())}, new_cnt={len(fetched_fins.keys())} -> Self-correcting")
+                logger.error(
+                    f"This doesnt look right:\n{player}: old_cnt={len(fins.keys())}, new_cnt={len(fetched_fins.keys())} -> Self-correcting"
+                )
                 nfpb = []
             for fin in nfpb:
-                await self.bot.get_channel(self.bot.channel.id).send(
-                            embed=build_announce_embed(
-                                {"username": player, "fincount": len(fetched_fins)}, fin
-                            )
-                        )
+                await self.bot.get_channel(self.bot.fin_channel.id).send(
+                    embed=build_announce_embed(
+                        {"username": player, "fincount": len(fetched_fins)}, fin
+                    )
+                )
             std.add_or_update_player(player, fetched_fins)
         logger.info("Done fetching all players")
 

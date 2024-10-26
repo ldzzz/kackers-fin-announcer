@@ -3,7 +3,7 @@ version: '3'
 services:
   finbot:
     container_name: finBOT
-    build:  
+    build:
       context: ..
       dockerfile: .deploy/Dockerfile
       args:
@@ -19,3 +19,7 @@ services:
       options:
         max-size: 10m
         max-file: "3"
+
+networks:
+  default:
+    name: finbot-deploy-network
