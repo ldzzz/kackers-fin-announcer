@@ -51,11 +51,7 @@ def _score_to_string(score: int, delta: int) -> str:
 def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
     logger.debug("Building announce embed")
     fin_embed = discord.Embed(
-        title=(
-            ":checkered_flag: NEW FINISH :checkered_flag:"
-            if "score_delta" not in fin.keys()
-            else ":fire: NEW TOP 5 :fire:"
-        ),
+        title=determine_embed_title(player, fin),
         url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         color=discord.Color.random(),
     )
@@ -75,9 +71,40 @@ def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
     fin_embed.add_field(name="Total fins", value=player["fincount"])
     fin_embed.add_field(name="\u200B", value="\u200B")  # newline
     fin_embed.add_field(name="Date", value=f"<t:{int(fin['date'])}:f>")
-    fin_embed.set_footer(text=f"Bot by djinn")
+
+    #if (f"{fin['kacky_rank']}") fin_embed.add_field("<@&>")
+
+    fin_embed.set_footer(text=f"Bot by djinn and ultra")
     return fin_embed
 
+def determine_embed_title(player: dict, fin: dict):
+    """
+    Returns the correct title for the embed based on the parameters.
+
+    It checks for wr's, pbs with rank <= 5, hunting ranks achieved, and new finishes
+    """
+
+    edition_count = CFG.mappack_count / 75
+    ranks_numbers = [edition_count * 10, edition_count * 25, edition_count * 50, edition_count * 65, edition_count * 75]
+    ranks_title = [
+        ":PepegaClown: NEW PLASTIC RANK :PepegaClown:"
+        ":Pepeg: NEW BRONZE RANK :Pepeg:"
+        ":Pepega: NEW SILVER RANK :Pepega:"
+        ":PepegaDriving: NEW GOLD RANK :PepegaDriving:"
+        ":Nerdge: NEW KACKY RANK :Nerdge:" 
+    ]
+
+    if "score_delta" not in fin.keys:
+        if f"{fin['kacky_rank']}" == 1:
+            return ":crown: NEW WORLD RECORD :crown:"
+        else:
+            return ":fire: NEW TOP 5 :fire:"
+        
+    for i in range(len(ranks_numbers)):
+        if player["fincount"] == ranks_numbers[i]:
+            return ranks_title[i]
+        
+    return ":checkered_flag: NEW FINISH :checkered_flag:"
 
 def get_latest_finishes(old, new):
     """Gets latest finishes.
