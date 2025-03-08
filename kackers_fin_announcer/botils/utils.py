@@ -54,8 +54,8 @@ def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
     title = ":checkered_flag: NEW FINISH :checkered_flag:"
     try:
         title = determine_embed_title(player, fin)
-    except:
-        logger.info("Failed to determine title")
+    except Exception as e:
+        logger.info("Failed to determine title: ", e)
 
     fin_embed = discord.Embed(
         title=(title),
@@ -91,7 +91,7 @@ def determine_embed_title(player: dict, fin: dict):
     It checks for wr's, pbs with rank <= 5, hunting ranks achieved, and new finishes
     """
 
-    edition_count = CFG.mappack_count / 75
+    edition_count = int(CFG.mappack_count / 75)
     ranks_numbers = [edition_count * 10, edition_count * 25, edition_count * 50, edition_count * 65, edition_count * 75]
     ranks_title = [
         ":PepegaClown: NEW PLASTIC RANK :PepegaClown:"
