@@ -49,9 +49,16 @@ def _score_to_string(score: int, delta: int) -> str:
 
 
 def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
-    logger.debug("Building announce embed")
+    logger.info("Building announce embed")
+
+    title = ":checkered_flag: NEW FINISH :checkered_flag:"
+    try:
+        title = determine_embed_title(player, fin)
+    except:
+        logger.info("Failed to determine title")
+
     fin_embed = discord.Embed(
-        title=determine_embed_title(player, fin),
+        title=(title),
         url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         color=discord.Color.random(),
     )
