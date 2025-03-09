@@ -102,7 +102,7 @@ def determine_embed_title(player: dict, fin: dict):
     ]
 
     if "score_delta" in fin.keys():
-        if f"{fin['kacky_rank']}" == 1:
+        if fin['kacky_rank'] == 1:
             return ":crown: NEW WORLD RECORD :crown:"
         else:
             return ":fire: NEW TOP 5 :fire:"
