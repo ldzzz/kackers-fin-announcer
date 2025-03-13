@@ -79,7 +79,7 @@ def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
     fin_embed.add_field(name="\u200B", value="\u200B")  # newline
     fin_embed.add_field(name="Date", value=f"<t:{int(fin['date'])}:f>")
 
-    #if (f"{fin['kacky_rank']}") fin_embed.add_field("<@&>")
+    if ( fin['kacky_rank'] == 1): fin_embed.add_field("<@&1349723580203536527>")
 
     fin_embed.set_footer(text=f"Bot by djinn and ultra")
     return fin_embed
@@ -91,7 +91,7 @@ def determine_embed_title(player: dict, fin: dict):
     It checks for wr's, pbs with rank <= 5, hunting ranks achieved, and new finishes
     """
 
-    edition_count = int(CFG.mappack_count / 75)
+    edition_count = int(int(CFG.mappack_count) // 75)
     ranks_numbers = [edition_count * 10, edition_count * 25, edition_count * 50, edition_count * 65, edition_count * 75]
     ranks_title = [
         ":PepegaClown: NEW PLASTIC RANK :PepegaClown:"
