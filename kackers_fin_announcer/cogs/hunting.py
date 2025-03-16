@@ -43,6 +43,11 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
                         {"username": player, "fincount": len(fetched_fins)}, fin
                     )
                 )
+
+                #ping wr role
+                if fin['kacky_rank'] == 1:
+                    await self.bot.get_channel(self.bot.fin_channel.id).send("<@&1349723580203536527>")
+
             std.add_or_update_player(player, fetched_fins)
         logger.info("Done fetching all players")
 
