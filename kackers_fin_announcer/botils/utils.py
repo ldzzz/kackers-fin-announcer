@@ -95,10 +95,10 @@ def determine_embed_title(player: dict, fin: dict):
     edition_count = int(int(CFG.mappack_count) // 75)
     ranks_numbers = [edition_count * 10, edition_count * 25, edition_count * 50, edition_count * 65, edition_count * 75]
     ranks_title = [
-        ":PepegaClown: NEW PLASTIC RANK :PepegaClown:"
-        ":Pepeg: NEW BRONZE RANK :Pepeg:"
-        ":Pepega: NEW SILVER RANK :Pepega:"
-        ":PepegaDriving: NEW GOLD RANK :PepegaDriving:"
+        ":PepegaClown: NEW PLASTIC RANK :PepegaClown:",
+        ":Pepeg: NEW BRONZE RANK :Pepeg:",
+        ":Pepega: NEW SILVER RANK :Pepega:",
+        ":PepegaDriving: NEW GOLD RANK :PepegaDriving:",
         ":Nerdge: NEW KACKY RANK :Nerdge:" 
     ]
 
