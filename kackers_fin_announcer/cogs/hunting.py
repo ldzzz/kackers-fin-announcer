@@ -40,6 +40,7 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
                         {"username": player, "fincount": len(fetched_fins)}, fin
                     )
 
+                logger.info("Sending message 1")
                 if fin['score'] == get_top_two(fin['mapnr'])[0]:
                     logger.info("Sending Message")
                     await self.bot.get_channel(self.bot.fin_channel.id).send(
@@ -49,6 +50,7 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
                 else:
                     logger.info("Sending Message")
                     await self.bot.get_channel(self.bot.fin_channel.id).send(
+                        "xdd",
                         embed=embed_msg
                     )
 
