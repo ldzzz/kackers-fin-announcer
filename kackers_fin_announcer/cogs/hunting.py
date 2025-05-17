@@ -41,7 +41,9 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
                     )
 
                 logger.info("Sending message 1")
-                if fin['kacky_rank'] == 1:
+                offlineTopTwo = get_top_two(fin['mapnr'])
+
+                if offlineTopTwo[0] == fin['score']:
                     logger.info("Sending Message")
                     await self.bot.get_channel(self.bot.fin_channel.id).send(
                         "<@&1349723580203536527>",
@@ -50,7 +52,6 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
                 else:
                     logger.info("Sending Message")
                     await self.bot.get_channel(self.bot.fin_channel.id).send(
-                        "xdd",
                         embed=embed_msg
                     )
 
