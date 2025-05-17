@@ -6,7 +6,7 @@ from pathlib import Path
 import discord
 import namedtupled
 
-from nadeoAPI import get_top_two
+from botils.nadeoAPI import get_top_two
 
 def _get_module_logger(mod_name: str) -> logging.Logger:
     """
