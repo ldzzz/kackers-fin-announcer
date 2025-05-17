@@ -36,7 +36,7 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
                 )
                 nfpb = []
             for fin in nfpb:
-                embed_msg = embed=build_announce_embed(
+                embed_msg = build_announce_embed(
                         {"username": player, "fincount": len(fetched_fins)}, fin
                     )
 
