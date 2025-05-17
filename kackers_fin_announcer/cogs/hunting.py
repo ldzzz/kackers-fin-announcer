@@ -41,11 +41,13 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
                     )
 
                 if fin['score'] == get_top_two(fin['mapnr'])[0]:
+                    logger.info("Sending Message")
                     await self.bot.get_channel(self.bot.fin_channel.id).send(
                         "<@&1349723580203536527>",
                         embed=embed_msg
                     )
                 else:
+                    logger.info("Sending Message")
                     await self.bot.get_channel(self.bot.fin_channel.id).send(
                         embed=embed_msg
                     )

@@ -6,7 +6,6 @@ from botils.load_config_logger import CFG, _get_module_logger
 
 def get_ticket():
     basic = HTTPBasicAuth(CFG.nadeo_username, CFG.nadeo_pw)
-    print(basic)
 
     url = "https://public-ubiservices.ubi.com/v3/profiles/sessions"
     headers = {"Content-Type": "application/json", "Ubi-AppId":"86263886-327a-4328-ac69-527f0d20a237", "User-Agent":"ThijsvanB"}
