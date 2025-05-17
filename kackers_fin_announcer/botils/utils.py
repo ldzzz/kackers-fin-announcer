@@ -52,12 +52,10 @@ def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
         offlineTopTwo = get_top_two(fin['mapnr'])
 
         if offlineTopTwo[0] == fin['score']:
-            fin_embed.add_field(name="Old wr", value=_score_to_string(offlineTopTwo[1], offlineTopTwo[1] - offlineTopTwo[0]))
-            fin_embed.add_field(name="\u200B", value="\u200B")
+            fin_embed.add_field(name="Old WR", value=_score_to_string(offlineTopTwo[1], offlineTopTwo[1] - offlineTopTwo[0]))
             fin_embed.add_field(name="\u200B", value="\u200B")
 
     fin_embed.add_field(name="Total fins", value=player["fincount"])
-    fin_embed.add_field(name="\u200B", value="\u200B")  # newline
     fin_embed.add_field(name="Date", value=f"<t:{int(fin['date'])}:f>")
 
 #    if (fin['kacky_rank'] == 1): 
