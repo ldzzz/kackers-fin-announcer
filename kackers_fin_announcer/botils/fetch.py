@@ -1,7 +1,5 @@
 import requests
-from botils.utils import CFG, _get_module_logger
-
-logger = _get_module_logger(__name__)
+from botils.load_config_logger import CFG, logger
 
 
 def fetch_player_finishes(player: str) -> dict:

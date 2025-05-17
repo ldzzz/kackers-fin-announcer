@@ -1,11 +1,10 @@
 import botils.shelfer as std
 import discord
 from botils.fetch import fetch_player_finishes
-from botils.utils import _create_embed, _get_module_logger
+from botils.load_config_logger import logger
+from botils.utils import _create_embed
 from discord import app_commands
 from discord.ext import commands
-
-logger = _get_module_logger(__name__)
 
 
 class KFADm(commands.Cog, name="DMCog"):

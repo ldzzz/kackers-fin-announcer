@@ -2,9 +2,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import ast
 
-from botils.utils import CFG, _get_module_logger
-
-logger = _get_module_logger(__name__)
+from botils.load_config_logger import CFG, _get_module_logger
 
 def get_ticket():
     basic = HTTPBasicAuth(CFG.nadeo_username, CFG.nadeo_pw)

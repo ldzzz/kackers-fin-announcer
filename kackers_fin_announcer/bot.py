@@ -1,10 +1,8 @@
 import asyncio
 
 import discord
-from botils.utils import CFG, _get_module_logger
+from botils.load_config_logger import CFG, logger
 from discord.ext import commands
-
-logger = _get_module_logger(__name__)
 
 
 class KackersFinAnnouncer(commands.Bot):

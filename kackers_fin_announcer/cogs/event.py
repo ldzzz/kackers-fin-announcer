@@ -1,17 +1,14 @@
 import botils.shelfer as std
 import discord
 from botils.fetch import fetch_player_finishes
+from botils.load_config_logger import CFG, logger
 from botils.utils import (
-    CFG,
     _create_embed,
-    _get_module_logger,
     build_announce_embed,
     get_latest_finishes,
 )
 from discord import app_commands
 from discord.ext import commands, tasks
-
-logger = _get_module_logger(__name__)
 
 
 class KFAEvent(commands.Cog, name="EventBattleCog"):
