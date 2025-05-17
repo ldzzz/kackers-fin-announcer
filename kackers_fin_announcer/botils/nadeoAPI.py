@@ -31,7 +31,7 @@ def get_top_two(mapNr):
     liveToken = get_Live_API_token(ticket)  
 
     file = open(CFG.map_ids)
-    maps = file.readline().split("\n")
+    maps = file.readline().split("\\n")
     print(maps)
 
     getRecordsUrl = "https://live-services.trackmania.nadeo.live/api/token/leaderboard/group/Personal_Best/map/{mapUid}/top?length=2&onlyWorld=true&offset=0"
