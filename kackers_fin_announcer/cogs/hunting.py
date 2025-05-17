@@ -7,6 +7,7 @@ from botils.utils import (
     get_latest_finishes,
 )
 from discord.ext import commands, tasks
+from botils.nadeoAPI import get_top_two
 
 logger = _get_module_logger(__name__)
 
@@ -38,15 +39,23 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
                 )
                 nfpb = []
             for fin in nfpb:
-                await self.bot.get_channel(self.bot.fin_channel.id).send(
-                    embed=build_announce_embed(
+                embed_msg = embed=build_announce_embed(
                         {"username": player, "fincount": len(fetched_fins)}, fin
                     )
-                )
+
+                if fin['score'] == get_top_two(fin['mapnr'])[0]:
+                    await self.bot.get_channel(self.bot.fin_channel.id).send(
+                        "<@&1349723580203536527>",
+                        embed=embed_msg
+                    )
+                else:
+                    await self.bot.get_channel(self.bot.fin_channel.id).send(
+                        embed=embed_msg
+                    )
 
                 #ping wr role
-                if fin['kacky_rank'] == 1:
-                    await self.bot.get_channel(self.bot.fin_channel.id).send("<@&1349723580203536527>")
+                #if fin['kacky_rank'] == 1:
+                #    await self.bot.get_channel(self.bot.fin_channel.id).send("<@&1349723580203536527>")
 
             std.add_or_update_player(player, fetched_fins)
         logger.info("Done fetching all players")

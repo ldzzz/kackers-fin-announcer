@@ -6,6 +6,7 @@ from pathlib import Path
 import discord
 import namedtupled
 
+from nadeoAPI import get_top_two
 
 def _get_module_logger(mod_name: str) -> logging.Logger:
     """
@@ -75,6 +76,13 @@ def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
         value=f"{fin['kacky_rank']}"
         + (f"({fin['rank_delta']})" if "rank_delta" in fin.keys() else ""),
     )
+
+    if (fin['kacky_rank'] == 1):
+        offlineTopTwo = get_top_two(fin['mapnr'])
+
+        if offlineTopTwo[0] == fin["score"]:
+            fin_embed.add_field(name="Old wr", value=_score_to_string(offlineTopTwo[1], offlineTopTwo[1] - offlineTopTwo[0]))
+
     fin_embed.add_field(name="Total fins", value=player["fincount"])
     fin_embed.add_field(name="\u200B", value="\u200B")  # newline
     fin_embed.add_field(name="Date", value=f"<t:{int(fin['date'])}:f>")
