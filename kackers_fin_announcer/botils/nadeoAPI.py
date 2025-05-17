@@ -36,7 +36,7 @@ def get_top_two(mapNr):
     getRecordsUrl = "https://live-services.trackmania.nadeo.live/api/token/leaderboard/group/Personal_Best/map/{mapUid}/top?length=2&onlyWorld=true&offset=0"
 
     print(mapNr, type(mapNr))
-    urlReq = getRecordsUrl.replace("{mapUid}", maps[mapNr - 1])
+    urlReq = getRecordsUrl.replace("{mapUid}", maps[int(mapNr) - 1])
     print(urlReq)
 
     x = requests.get(urlReq, headers={"Authorization": "nadeo_v1 t=" + liveToken[0]})
