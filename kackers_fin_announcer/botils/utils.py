@@ -54,9 +54,15 @@ def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
         if offlineTopTwo[0] == fin['score']:
             fin_embed.add_field(name="Old WR", value=_score_to_string(offlineTopTwo[1], offlineTopTwo[1] - offlineTopTwo[0]))
             fin_embed.add_field(name="\u200B", value="\u200B")
-
-    fin_embed.add_field(name="Total fins", value=player["fincount"])
-    fin_embed.add_field(name="Date", value=f"<t:{int(fin['date'])}:f>")
+            fin_embed.add_field(name="\u200B", value="\u200B")
+        else:
+            fin_embed.add_field(name="Total fins", value=player["fincount"])
+            fin_embed.add_field(name="\u200B", value="\u200B")  # newline
+            fin_embed.add_field(name="Date", value=f"<t:{int(fin['date'])}:f>")
+    else:
+        fin_embed.add_field(name="Total fins", value=player["fincount"])
+        fin_embed.add_field(name="\u200B", value="\u200B")  # newline
+        fin_embed.add_field(name="Date", value=f"<t:{int(fin['date'])}:f>")
 
 #    if (fin['kacky_rank'] == 1): 
 #        fin_embed.add_field(name="WR-Ping", value="<@&1349723580203536527>")
@@ -84,7 +90,12 @@ def determine_embed_title(player: dict, fin: dict):
 
     if "score_delta" in fin.keys():
         if fin['kacky_rank'] == 1:
-            return ":crown: NEW WORLD RECORD :crown:"
+            offlineTopTwo = get_top_two(fin['mapnr'])
+
+            if offlineTopTwo[0] == fin['score']:
+                return ":crown: NEW WORLD RECORD :crown:"
+            else:
+                return ":fire: NEW TOP 5 :fire:"
         else:
             return ":fire: NEW TOP 5 :fire:"
         
