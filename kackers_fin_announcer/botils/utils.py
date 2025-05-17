@@ -62,6 +62,7 @@ def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
 #        fin_embed.add_field(name="WR-Ping", value="<@&1349723580203536527>")
 
     fin_embed.set_footer(text=f"Bot by djinn and ultra")
+    logger.info("Built announce embed")
     return fin_embed
 
 def determine_embed_title(player: dict, fin: dict):
