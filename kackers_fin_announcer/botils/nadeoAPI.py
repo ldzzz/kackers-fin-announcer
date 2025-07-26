@@ -13,6 +13,10 @@ def get_ticket():
     x = requests.post(url, headers=headers, auth=basic)
 
     print("Request ticket: ", x)
+
+    if(x.status_code != 401):
+        return -1
+
     return x.text.split('"')[7]
 
 def get_Live_API_token(ticket):
@@ -24,11 +28,18 @@ def get_Live_API_token(ticket):
     x = requests.post(url, headers = headers, json=body)
 
     print("Request live token: ", x)
+
+    if(x.status_code != 401):
+        return -1
+
     return [x.text.split('"')[3], x.text.split('"')[7]]
 
 def get_top_two(mapNr):
     ticket = get_ticket()
     liveToken = get_Live_API_token(ticket)  
+
+    if ticket == -1 or liveToken == -1:
+        return -1
 
     file = open(CFG.map_ids)
     maps = file.readline().split("\\n")
