@@ -36,9 +36,12 @@ def get_Live_API_token(ticket):
 
 def get_top_two(mapNr):
     ticket = get_ticket()
+    if ticket == -1:
+        return -1
+
     liveToken = get_Live_API_token(ticket)  
 
-    if ticket == -1 or liveToken == -1:
+    if liveToken == -1:
         return -1
 
     file = open(CFG.map_ids)
