@@ -14,7 +14,7 @@ def get_ticket():
 
     print("Request ticket: ", x)
 
-    if(x.status_code != 401):
+    if(x.status_code != 200):
         return -1
 
     return x.text.split('"')[7]
@@ -29,7 +29,7 @@ def get_Live_API_token(ticket):
 
     print("Request live token: ", x)
 
-    if(x.status_code != 401):
+    if(x.status_code != 200):
         return -1
 
     return [x.text.split('"')[3], x.text.split('"')[7]]
