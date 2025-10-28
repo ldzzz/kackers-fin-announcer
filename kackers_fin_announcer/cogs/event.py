@@ -9,7 +9,7 @@ from botils.utils import (
 )
 from discord import app_commands
 from discord.ext import commands, tasks
-
+from botils.nadeoAPI import get_top_two
 
 class KFAEvent(commands.Cog, name="EventBattleCog"):
     def __init__(self, bot):
@@ -38,12 +38,26 @@ class KFAEvent(commands.Cog, name="EventBattleCog"):
                     f"This doesnt look right:\n{player}: old_cnt={len(fins.keys())}, new_cnt={len(fetched_fins.keys())} -> Self-correcting"
                 )
                 nfpb = []
+            
             for fin in nfpb:
-                await self.bot.get_channel(self.bot.fin_channel.id).send(
-                    embed=build_announce_embed(
+                embed_msg = build_announce_embed(
                         {"username": player, "fincount": len(fetched_fins)}, fin
                     )
-                )
+
+                #check for offline wr
+                logger.info("Sending message 1")
+                offlineTopTwo = get_top_two(fin['mapnr'])
+                if offlineTopTwo[0] == fin['score']:
+                    logger.info("Sending Message")
+                    await self.bot.get_channel(self.bot.fin_channel.id).send(
+                        "<@&1349723580203536527>",
+                        embed=embed_msg
+                    )
+                else:
+                    logger.info("Sending Message")
+                    await self.bot.get_channel(self.bot.fin_channel.id).send(
+                        embed=embed_msg
+                    )
             std.add_or_update_player(player, fetched_fins)
         logger.info("Done fetching all players")
 

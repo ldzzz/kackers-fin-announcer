@@ -40,9 +40,9 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
                         {"username": player, "fincount": len(fetched_fins)}, fin
                     )
 
+                #check for offline wr
                 logger.info("Sending message 1")
                 offlineTopTwo = get_top_two(fin['mapnr'])
-
                 if offlineTopTwo[0] == fin['score']:
                     logger.info("Sending Message")
                     await self.bot.get_channel(self.bot.fin_channel.id).send(
