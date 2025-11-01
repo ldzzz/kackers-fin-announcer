@@ -1,9 +1,10 @@
+import re
 from datetime import datetime
 
 import discord
-
-from botils.load_config_logger import logger, CFG
+from botils.load_config_logger import CFG, logger
 from botils.nadeoAPI import get_top_two
+
 
 def _create_embed(title: str, data: dict = None) -> discord.Embed:
     mbed = discord.Embed(title=title)
@@ -34,35 +35,39 @@ def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
         url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         color=discord.Color.random(),
     )
-    fin_embed.set_thumbnail(url=CFG.thumbnails.replace("MAPNR", fin["mapnr"]))
+    fin_embed.set_thumbnail(url=CFG["bot"]["thumbnails"].replace("MAPNR", str(fin["number"])))
     fin_embed.add_field(name="Player", value=player["username"])
     fin_embed.add_field(name="\u200B", value="\u200B")  # newline
-    fin_embed.add_field(name="Map", value=f"#{fin['mapnr']}")
+    fin_embed.add_field(name="Map", value=f"#{fin['number']}")
     fin_embed.add_field(
         name="Time", value=_score_to_string(fin["score"], fin.get("score_delta", None))
     )
     fin_embed.add_field(name="\u200B", value="\u200B")  # newline
-    fin_embed.add_field(
-        name="Rank",
-        value=f"{fin['kacky_rank']}"
-        + (f"({fin['rank_delta']})" if "rank_delta" in fin.keys() else ""),
-    )
+    # TODO: this will also need updating to be nicer and work with PBs, WRs and stuff
+    fin_embed.add_field(name="Total fins", value=player["fincount"])
+    #fin_embed.add_field(name="\u200B", value="\u200B")  # newline
+    fin_embed.add_field(name="Date", value=f"{fin['lastImprovedAt']}")
+    #fin_embed.add_field(
+    #    name="Rank",
+    #    value=f"{fin['kacky_rank']}"
+    #    + (f"({fin['rank_delta']})" if "rank_delta" in fin.keys() else ""),
+    #)
 
-    if (fin['kacky_rank'] == 1):
-        offlineTopTwo = get_top_two(fin['mapnr'])
+    #if (fin['kacky_rank'] == 1):
+    #    offlineTopTwo = get_top_two(fin['mapnr'])
 
-        if offlineTopTwo[0] == fin['score']:
-            fin_embed.add_field(name="Old WR", value=_score_to_string(offlineTopTwo[1], offlineTopTwo[1] - offlineTopTwo[0]))
-            fin_embed.add_field(name="\u200B", value="\u200B")
-            fin_embed.add_field(name="\u200B", value="\u200B")
-        else:
-            fin_embed.add_field(name="Total fins", value=player["fincount"])
-            fin_embed.add_field(name="\u200B", value="\u200B")  # newline
-            fin_embed.add_field(name="Date", value=f"<t:{int(fin['date'])}:f>")
-    else:
-        fin_embed.add_field(name="Total fins", value=player["fincount"])
-        fin_embed.add_field(name="\u200B", value="\u200B")  # newline
-        fin_embed.add_field(name="Date", value=f"<t:{int(fin['date'])}:f>")
+    #    if offlineTopTwo[0] == fin['score']:
+    #        fin_embed.add_field(name="Old WR", value=_score_to_string(offlineTopTwo[1], offlineTopTwo[1] - offlineTopTwo[0]))
+    #        fin_embed.add_field(name="\u200B", value="\u200B")
+    #        fin_embed.add_field(name="\u200B", value="\u200B")
+    #    else:
+    #        fin_embed.add_field(name="Total fins", value=player["fincount"])
+    #        fin_embed.add_field(name="\u200B", value="\u200B")  # newline
+    #        fin_embed.add_field(name="Date", value=f"<t:{int(fin['date'])}:f>")
+    #else:
+    #    fin_embed.add_field(name="Total fins", value=player["fincount"])
+    #    fin_embed.add_field(name="\u200B", value="\u200B")  # newline
+    #    fin_embed.add_field(name="Date", value=f"<t:{int(fin['date'])}:f>")
 
 #    if (fin['kacky_rank'] == 1): 
 #        fin_embed.add_field(name="WR-Ping", value="<@&1349723580203536527>")
@@ -77,31 +82,30 @@ def determine_embed_title(player: dict, fin: dict):
 
     It checks for wr's, pbs with rank <= 5, hunting ranks achieved, and new finishes
     """
+    # TODO: this will need to be rewritten
+    #edition_count = int(int(CFG[CFG["bot"]["mode"]]["mappack_count"]) // 75)
+    #ranks_numbers = [edition_count * 10, edition_count * 25, edition_count * 50, edition_count * 65, edition_count * 75]
+    #ranks_title = [
+    #    "<:PepegaClown:1301186994717724745> NEW PLASTIC RANK <:PepegaClown:1301186994717724745>",
+    #    "<:Pepeg:1301185040272719985> NEW BRONZE RANK <:Pepeg:1301185040272719985>",
+    #    "<:Pepega:1301185111399731242> NEW SILVER RANK <:Pepega:1301185111399731242>",
+    #    "<:PepegaDriving:1301185137282650113> NEW GOLD RANK <:PepegaDriving:1301185137282650113>",
+    #    "<:Nerdge:1301196656309567558> NEW KACKY RANK <:Nerdge:1301196656309567558>" 
+    #]
 
-    edition_count = int(int(CFG.mappack_count) // 75)
-    ranks_numbers = [edition_count * 10, edition_count * 25, edition_count * 50, edition_count * 65, edition_count * 75]
-    ranks_title = [
-        "<:PepegaClown:1301186994717724745> NEW PLASTIC RANK <:PepegaClown:1301186994717724745>",
-        "<:Pepeg:1301185040272719985> NEW BRONZE RANK <:Pepeg:1301185040272719985>",
-        "<:Pepega:1301185111399731242> NEW SILVER RANK <:Pepega:1301185111399731242>",
-        "<:PepegaDriving:1301185137282650113> NEW GOLD RANK <:PepegaDriving:1301185137282650113>",
-        "<:Nerdge:1301196656309567558> NEW KACKY RANK <:Nerdge:1301196656309567558>" 
-    ]
-
-    if "score_delta" in fin.keys():
-        if fin['kacky_rank'] == 1:
-            offlineTopTwo = get_top_two(fin['mapnr'])
-
-            if offlineTopTwo[0] == fin['score']:
-                return ":crown: NEW WORLD RECORD :crown:"
-            else:
-                return ":fire: NEW TOP 5 :fire:"
-        else:
-            return ":fire: NEW TOP 5 :fire:"
+    #if "score_delta" in fin.keys():
+    #    if fin['kacky_rank'] == 1:
+    #        offlineTopTwo = get_top_two(fin['mapnr'])
+    #        if offlineTopTwo[0] == fin['score']:
+    #            return ":crown: NEW WORLD RECORD :crown:"
+    #        else:
+    #            return ":fire: NEW TOP 5 :fire:"
+    #    else:
+    #        return ":fire: NEW TOP 5 :fire:"
         
-    for i in range(len(ranks_numbers)):
-        if player["fincount"] == ranks_numbers[i]:
-            return ranks_title[i]
+    #for i in range(len(ranks_numbers)):
+    #    if player["fincount"] == ranks_numbers[i]:
+    #        return ranks_title[i]
         
     return ":checkered_flag: NEW FINISH :checkered_flag:"
 
@@ -116,28 +120,33 @@ def get_latest_finishes(old, new):
         list: list of new and PB finishes
     """
     ret = []
-    for mapnr, mapdata in new.items():
-        # add new finish found
-        if mapnr not in list(old.keys()):
-            mapdata["mapnr"] = mapnr
-            ret.append(mapdata)
-        # add new PB if <= CFG.pb_limit and fresh
-        elif (
-            mapdata["date"] > old[mapnr]["date"]
-            and mapdata["score"] < old[mapnr]["score"]
-            and mapdata["kacky_rank"] <= CFG.pb_limit
-        ):
-            # prepare PB data
-            mapdata["mapnr"] = mapnr
-            score_delta = old[mapnr]["score"] - mapdata["score"]
-            # detect abnormalities (e.g. v2 map issues)
-            if score_delta > 0:
-                mapdata["score_delta"] = score_delta
-                mapdata["rank_delta"] = mapdata["kacky_rank"] - old[mapnr]["kacky_rank"]
-                ret.append(mapdata)
-            else:
-                # if abnormality detected, do nothing, report error
-                logger.error(
-                    f"Abnormality detected for {mapnr}\nOLD: {old[mapnr]}\nNEW: {mapdata}"
-                )
+    old_dict = {str(e["number"]): e for e in old}
+    for entry in new:
+        num = entry["number"]
+        if str(num) not in old_dict.keys(): # Completely new finish
+            ret.append(entry)
+    # TODO: somehow gotta check if PB worthy announcing or not - the new API doesn't return "rank" anymore - so we probably have to check the map lb or something
     return ret
+
+
+def parse_teams(teams: bytes) -> list:
+    teams = teams.decode().strip()
+    parsed_teams = [[line for line in block.splitlines() if line.strip()] for block in re.split(r"^\s*---\s*$", teams, flags=re.MULTILINE)]
+    return parsed_teams
+
+
+def filter_duplicates(records: list) -> list:
+    latest_entries = {}
+    for entry in records:
+        num = entry["number"]
+        if num not in latest_entries:
+            latest_entries[num] = entry
+        else:
+            if parse_ts(entry["lastImprovedAt"]) > parse_ts(latest_entries[num]["lastImprovedAt"]):
+                latest_entries[num] = entry
+    return list(latest_entries.values())
+
+
+# Convert ISO timestamp to datetime
+def parse_ts(ts):
+    return datetime.fromisoformat(ts.replace("Z", "+00:00"))

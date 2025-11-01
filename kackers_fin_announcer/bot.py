@@ -1,13 +1,29 @@
 import asyncio
 
 import discord
-from botils.load_config_logger import CFG, logger
+from botils.load_config_logger import CFG, SECRETS, logger
+from botils.shelfer import (
+    get_config,
+    update_bot_config,
+    update_event_config,
+    update_hunting_config,
+)
 from discord.ext import commands
 
 
 class KackersFinAnnouncer(commands.Bot):
-    fin_channel = discord.Object(id=CFG.bot.finannouncement_channel)
-    server = discord.Object(id=CFG.bot.server_id)
+    logger.info("Starting bot init")
+    logger.info("Checking if there is pre-saved config")
+    saved_cfg = get_config()
+    logger.info(f"Saved config: {saved_cfg}")
+    if saved_cfg:
+        CFG = saved_cfg
+    else:
+        update_bot_config(CFG["bot"])
+        update_hunting_config(CFG["hunting"])
+        update_event_config(CFG["event"])
+    fin_channel = discord.Object(id=CFG["bot"]["finannouncement_channel"])
+    server = discord.Object(id=SECRETS["server_id"])
     synced = False
 
     async def on_ready(self):
@@ -18,8 +34,8 @@ class KackersFinAnnouncer(commands.Bot):
 
 
 async def load_extensions(bot):
-    for cog in CFG.bot.cogs:
-        await bot.load_extension(f"cogs.{cog}")
+    await bot.load_extension(f"cogs.dm")
+    await bot.load_extension(f"cogs.{CFG['bot']['mode']}")
 
 
 async def main():
@@ -29,8 +45,8 @@ async def main():
     )
     async with kfa:
         await load_extensions(kfa)
-        logger.info(f"Loaded extensions: {CFG.bot.cogs}")
-        await kfa.start(CFG.bot.token)
+        logger.info(f"Loaded extensions")
+        await kfa.start(SECRETS["token"])
 
 
 if __name__ == "__main__":

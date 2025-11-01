@@ -8,6 +8,5 @@ setup(
     packages=find_packages(),
     install_requires=[
         "discord-py" == "2.3.2",
-        "namedtupled" == "0.3.3",
     ],
 )

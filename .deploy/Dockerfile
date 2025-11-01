@@ -44,4 +44,4 @@ USER ${NAME}
 RUN echo "export PATH=/home/${NAME}/.local/bin:${PATH}" >> ~/.bashrc
 
 # Start shell
-ENTRYPOINT [ "python3", "/workspace/kackers_fin_announcer/bot.py" ]
+ENTRYPOINT [ "python3", "/workspace/kackers_fin_announcer/bot.py" "/workspace/data/finStorage" "/workspace/data/botCFG"]

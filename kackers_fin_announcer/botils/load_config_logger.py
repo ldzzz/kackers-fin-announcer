@@ -1,9 +1,10 @@
 import json
 import logging
-
+import sys
 from pathlib import Path
 
-import namedtupled
+CFG = None
+SECRETS=None
 
 def _get_module_logger(mod_name: str) -> logging.Logger:
     """
@@ -23,9 +24,20 @@ def _get_module_logger(mod_name: str) -> logging.Logger:
 logger = _get_module_logger(__name__)
 
 
-def _load_config():
+def _load_default_config():
     global CFG
-    with open(Path.cwd() / "config.json", "r") as fp:
-        data = json.load(fp)
-        CFG = namedtupled.map(data, "CFG")
-    logger.info("CFG loaded")
+    if len(sys.argv) != 3:
+        logger.error("Please provide fin storage and bot cfg paths")
+        exit(-1)
+    with open(Path.cwd() / sys.argv[1], "r") as fp:
+        CFG = json.load(fp)
+    logger.info(f"DEFAULT CFG loaded from {sys.argv[1]}")
+
+def _load_secrets():
+    global SECRETS
+    if len(sys.argv) != 3:
+        logger.error("Please provide fin storage and bot cfg paths")
+        exit(-1)
+    with open(Path.cwd() / sys.argv[2], "r") as fp:
+        SECRETS = json.load(fp)
+        logger.info(f"SECRETS loaded from {sys.argv[2]}")

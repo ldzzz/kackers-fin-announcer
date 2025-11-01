@@ -196,3 +196,5 @@ poetry.toml
 .ionide
 .vscode/*
 data/*
+secrets.json
+default_config.json
