@@ -35,6 +35,7 @@ def update_player_fins(username: str, new_fins: dict) -> None:
         fins (list): list of finishes and their metadata
     """
     with shelve.open(filename=botils.config.CFG.SECRETS["storage"], writeback=True) as std:
+        logger.info(f"Adding {len(new_fins)} to already {len(std[username]['finishes'])}")
         std[username]["finishes"].extend(new_fins)
 
 def add_or_update_player(username: str, pid: int, fins: dict) -> None:

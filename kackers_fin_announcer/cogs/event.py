@@ -39,26 +39,6 @@ class KFAEvent(commands.Cog, name="EventBattleCog"):
             logger.removeHandler(handler)
             handler.close()
 
-    @app_commands.command(name="helmboard")
-    async def helm_leaderboard(self, interaction: discord.Interaction) -> None:
-        """Show helm event leaderboard"""
-        await interaction.response.defer(thinking=True)
-        player_data = std.get_all_data()
-        data_n = [(sum(1 for entry in data["finishes"] if entry["number"] > (botils.config.CFG.BOT["event"]["edition"]-1)*75)) for _, data in player_data.items()]
-        data_sorted = sorted(data_n, key=lambda x: x[1], reverse=True)
-        unzipped = list(zip(*data_sorted))
-        names, fin_cnt = '\n'.join(unzipped[0]), '**' + '\n'.join(str(x) for x in unzipped[1]) + '**'
-        await interaction.followup.send(
-            embed=_create_embed(
-                title="Helm Leaderboard",
-                data={
-                    "Rank": "**" + '.\n'.join(str(x) for x in range(1, 1 + len(player_data.keys()))) + "**",
-                    "Name": names,
-                    "Finish count": fin_cnt,
-                },
-            )
-        )
-
     @tasks.loop(minutes=botils.config.CFG.BOT["event"]["interval"])
     async def fetch_finishes(self):
         players = std.get_all_data()
@@ -73,7 +53,6 @@ class KFAEvent(commands.Cog, name="EventBattleCog"):
                 )
                 continue
             nfpb = get_latest_finishes(data["finishes"], cleaned_fins)
-            nfpb = cleaned_fins[:1]
             # self-correct if writing to file failed at any point
             if len(cleaned_fins) // 2 > len(data["finishes"]):
                 logger.error(

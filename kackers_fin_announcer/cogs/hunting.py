@@ -18,7 +18,6 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
             logger.info("starting fetch finishes")
             self.fetch_finishes.start()
 
-    def cog_unload(self):
         if self.fetch_finishes.is_running():
             logger.info("Canceling fetch finishes")
             self.fetch_finishes.cancel()

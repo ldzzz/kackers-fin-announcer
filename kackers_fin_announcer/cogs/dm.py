@@ -50,6 +50,41 @@ class KFADm(commands.Cog, name="DMCog"):
                 )
             )
 
+    @app_commands.command(name="helmboard")
+    async def helm_leaderboard(self, interaction: discord.Interaction) -> None:
+        """Show helm leaderboard"""
+        await interaction.response.defer(thinking=True)
+        player_data = std.get_all_data()
+        if botils.config.CFG.BOT["bot"]["mode"] == "event":
+            data_n = [(player, (sum(1 for entry in data["finishes"] if entry["number"] > (botils.config.CFG.BOT["event"]["edition"]-1)*75))) for player, data in player_data.items()]
+        else:
+            data_n = [(player, len(data["finishes"])) for player, data in player_data.items()]
+        data_sorted = sorted(data_n, key=lambda x: x[1], reverse=True)
+        unzipped = list(zip(*data_sorted))
+        names, fin_cnt = '\n'.join(unzipped[0]), '**' + '\n'.join(str(x) for x in unzipped[1]) + '**'
+        await interaction.followup.send(
+            embed=_create_embed(
+                title="Helm Leaderboard",
+                data={
+                    "Rank": "**" + '.\n'.join(str(x) for x in range(1, 1 + len(player_data.keys()))) + "**",
+                    "Name": names,
+                    "Finish count": fin_cnt,
+                },
+            )
+        )
+
+    @app_commands.command(name="talk")
+    async def talk(self, interaction: discord.Interaction, msg: str, channel: discord.TextChannel) -> None:
+        """Send message to channel with ID
+        
+        Args:
+            msg (str): Message to send
+            channel (int): channel choices
+        """
+        await interaction.response.defer(thinking=True)
+        await channel.send(msg)  # no need to get_channel manually
+        await interaction.response.send_message(f"Sent message to {channel.mention}")
+
     @app_commands.command(name="remove")
     async def remove_user(
         self,
@@ -88,7 +123,7 @@ class KFADm(commands.Cog, name="DMCog"):
 
     @cfg_group.command(name="bot")
     @app_commands.choices(mode=[app_commands.Choice(name="Hunting", value="hunting"), app_commands.Choice(name="Event", value="event")])
-    async def config_bot(self, interaction: discord.Interaction, mode: app_commands.Choice[str], finannouncement_channel: int=botils.config.CFG.BOT["bot"]["finannouncement_channel"], teambattle_channel: int=botils.config.CFG.BOT["bot"]["teambattle_channel"], thumbnails:str=botils.config.CFG.BOT["bot"]["thumbnails"]) -> None:
+    async def config_bot(self, interaction: discord.Interaction, mode: app_commands.Choice[str], finannouncement_channel: str=str(botils.config.CFG.BOT["bot"]["finannouncement_channel"]), teambattle_channel: str=str(botils.config.CFG.BOT["bot"]["teambattle_channel"]), thumbnails:str=botils.config.CFG.BOT["bot"]["thumbnails"]) -> None:
         """Set general bot configuration
         
         Args:
@@ -107,8 +142,9 @@ class KFADm(commands.Cog, name="DMCog"):
                 elif mode == "event":
                     logger.info("Unloaded cogs.hunting")
                     await self.bot.unload_extension("cogs.hunting")
-                await self.bot.load_extension(f"cogs.{mode.value}")
-            std.update_bot_config({"mode":mode.value, "finannouncement_channel":finannouncement_channel, "teambattle_channel":teambattle_channel, "thumbnails": thumbnails})
+                if f"cogs.{mode.value}" not in self.bot.extensions:
+                    await self.bot.load_extension(f"cogs.{mode.value}")
+            std.update_bot_config({"mode":mode.value, "finannouncement_channel":int(finannouncement_channel), "teambattle_channel":int(teambattle_channel), "thumbnails": thumbnails})
         except Exception as e:
             logger.error(e)
             await interaction.followup.send("Could not change modes. Check bot logs for further info")
