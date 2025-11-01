@@ -1,10 +1,12 @@
+import botils.config
 import requests
-from botils.load_config_logger import CFG, logger
+from botils.load_config_logger import get_module_logger
 
+logger = get_module_logger(__name__)
 
 def fetch_player_finishes(player: str, pid: int) -> list:
     """Fetch player fins and return it as a dictionary"""
-    url = CFG[CFG["bot"]["mode"]]["api"].replace("PID", str(pid))
+    url = botils.config.CFG.BOT[botils.config.CFG.BOT["bot"]["mode"]]["api"].replace("PID", str(pid))
     logger.info(f"Fetching data for player: {player} via {url}")
     try:
         data = requests.get(

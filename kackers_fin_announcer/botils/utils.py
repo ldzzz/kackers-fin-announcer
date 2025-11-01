@@ -1,10 +1,12 @@
-import re
+import json
 from datetime import datetime
 
+import botils.config
 import discord
-from botils.load_config_logger import CFG, logger
+from botils.load_config_logger import get_module_logger
 from botils.nadeoAPI import get_top_two
 
+logger = get_module_logger(__name__)
 
 def _create_embed(title: str, data: dict = None) -> discord.Embed:
     mbed = discord.Embed(title=title)
@@ -35,7 +37,7 @@ def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
         url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         color=discord.Color.random(),
     )
-    fin_embed.set_thumbnail(url=CFG["bot"]["thumbnails"].replace("MAPNR", str(fin["number"])))
+    fin_embed.set_thumbnail(url=botils.config.CFG.BOT["bot"]["thumbnails"].replace("MAPNR", str(fin["number"])))
     fin_embed.add_field(name="Player", value=player["username"])
     fin_embed.add_field(name="\u200B", value="\u200B")  # newline
     fin_embed.add_field(name="Map", value=f"#{fin['number']}")
@@ -126,13 +128,14 @@ def get_latest_finishes(old, new):
         if str(num) not in old_dict.keys(): # Completely new finish
             ret.append(entry)
     # TODO: somehow gotta check if PB worthy announcing or not - the new API doesn't return "rank" anymore - so we probably have to check the map lb or something
+    # TODO: careful for event as this is sent to be appended to current finishes of a player
     return ret
 
 
 def parse_teams(teams: bytes) -> list:
-    teams = teams.decode().strip()
-    parsed_teams = [[line for line in block.splitlines() if line.strip()] for block in re.split(r"^\s*---\s*$", teams, flags=re.MULTILINE)]
-    return parsed_teams
+    teams = json.loads(teams.decode().strip())
+    print(teams)
+    return teams
 
 
 def filter_duplicates(records: list) -> list:

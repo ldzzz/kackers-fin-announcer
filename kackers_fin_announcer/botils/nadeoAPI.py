@@ -1,9 +1,14 @@
-import requests
-from requests.auth import HTTPBasicAuth
 import ast
 
-from botils.load_config_logger import CFG, _get_module_logger
+import requests
+from botils.load_config_logger import get_module_logger
+from requests.auth import HTTPBasicAuth
 
+logger = get_module_logger(__name__)
+def get_top_two(mapNr):
+    pass
+"""
+TODO: also needs updating
 def get_ticket():
     basic = HTTPBasicAuth(CFG.nadeo_username, CFG.nadeo_pw)
 
@@ -59,3 +64,4 @@ def get_top_two(mapNr):
     print("Request records:", x)
     findata = ast.literal_eval(x.text)
     return [findata["tops"][0]["top"][0]["score"], findata["tops"][0]["top"][1]["score"]]
+"""

@@ -1,20 +1,29 @@
+import botils.config
 import botils.shelfer as std
 from botils.fetch import fetch_player_finishes
-from botils.load_config_logger import CFG, logger
+from botils.load_config_logger import get_module_logger
 from botils.nadeoAPI import get_top_two
 from botils.utils import build_announce_embed, filter_duplicates, get_latest_finishes
 from discord.ext import commands, tasks
+
+logger = get_module_logger(__name__)
 
 
 class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
     def __init__(self, bot):
         self.bot = bot
-        self.fetch_finishes.start()
+        logger.info("Updating intervals for Hunting Cog")
+        self.fetch_finishes.change_interval(minutes=botils.config.CFG.BOT["hunting"]["interval"])
+        if not self.fetch_finishes.is_running():
+            logger.info("starting fetch finishes")
+            self.fetch_finishes.start()
 
     def cog_unload(self):
-        self.fetch_finishes.cancel()
+        if self.fetch_finishes.is_running():
+            logger.info("Canceling fetch finishes")
+            self.fetch_finishes.cancel()
 
-    @tasks.loop(minutes=CFG["hunting"]["interval"])
+    @tasks.loop(minutes=botils.config.CFG.BOT["hunting"]["interval"])
     async def fetch_finishes(self):
         players = std.get_all_data()
         for player, data in players.items():
@@ -27,7 +36,7 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
                 )
                 continue
             nfpb = get_latest_finishes(data["finishes"], cleaned_fins)
-            nfpb = cleaned_fins[:2]
+            nfpb = nfpb[:1]
             # self-correct if writing to file failed at any point
             if len(cleaned_fins) // 2 > len(data["finishes"]):
                 logger.error(

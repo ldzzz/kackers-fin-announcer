@@ -1,7 +1,8 @@
 import asyncio
 
+import botils.config
 import discord
-from botils.load_config_logger import CFG, SECRETS, logger
+from botils.load_config_logger import get_module_logger
 from botils.shelfer import (
     get_config,
     update_bot_config,
@@ -10,6 +11,7 @@ from botils.shelfer import (
 )
 from discord.ext import commands
 
+logger = get_module_logger(__name__)
 
 class KackersFinAnnouncer(commands.Bot):
     logger.info("Starting bot init")
@@ -17,13 +19,13 @@ class KackersFinAnnouncer(commands.Bot):
     saved_cfg = get_config()
     logger.info(f"Saved config: {saved_cfg}")
     if saved_cfg:
-        CFG = saved_cfg
+        botils.config.CFG.BOT = saved_cfg
     else:
-        update_bot_config(CFG["bot"])
-        update_hunting_config(CFG["hunting"])
-        update_event_config(CFG["event"])
-    fin_channel = discord.Object(id=CFG["bot"]["finannouncement_channel"])
-    server = discord.Object(id=SECRETS["server_id"])
+        update_bot_config(botils.config.CFG.BOT["bot"])
+        update_hunting_config(botils.config.CFG.BOT["hunting"])
+        update_event_config(botils.config.CFG.BOT["event"])
+    fin_channel = discord.Object(id=botils.config.CFG.BOT["bot"]["finannouncement_channel"])
+    server = discord.Object(id=botils.config.CFG.SECRETS["server_id"])
     synced = False
 
     async def on_ready(self):
@@ -34,8 +36,10 @@ class KackersFinAnnouncer(commands.Bot):
 
 
 async def load_extensions(bot):
+    logger.info(f"Loading extension: cogs.dm")
     await bot.load_extension(f"cogs.dm")
-    await bot.load_extension(f"cogs.{CFG['bot']['mode']}")
+    logger.info(f"Loading extension: cogs.{botils.config.CFG.BOT['bot']['mode']}")
+    await bot.load_extension(f"cogs.{botils.config.CFG.BOT['bot']['mode']}")
 
 
 async def main():
@@ -46,7 +50,7 @@ async def main():
     async with kfa:
         await load_extensions(kfa)
         logger.info(f"Loaded extensions")
-        await kfa.start(SECRETS["token"])
+        await kfa.start(botils.config.CFG.SECRETS["token"])
 
 
 if __name__ == "__main__":

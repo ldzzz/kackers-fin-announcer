@@ -1,30 +1,50 @@
-import json
-
+import botils.config
 import botils.shelfer as std
 import discord
 from botils.fetch import fetch_player_finishes
-from botils.load_config_logger import CFG, logger
+from botils.load_config_logger import get_module_logger
 from botils.nadeoAPI import get_top_two
-from botils.utils import _create_embed, build_announce_embed, get_latest_finishes
+from botils.utils import (
+    _create_embed,
+    build_announce_embed,
+    filter_duplicates,
+    get_latest_finishes,
+)
 from discord import app_commands
 from discord.ext import commands, tasks
 
+logger = get_module_logger(__name__)
 
 class KFAEvent(commands.Cog, name="EventBattleCog"):
     def __init__(self, bot):
         self.bot = bot
-        self.fetch_finishes.start()
-        self.team_battle_standing.start()
+        logger.info("Updating intervals for Event Cog")
+        self.fetch_finishes.change_interval(minutes=botils.config.CFG.BOT["event"]["interval"])
+        self.team_battle_standing.change_interval(minutes=botils.config.CFG.BOT["event"]["battle_interval"])
+        if not self.fetch_finishes.is_running():
+            logger.info("starting fetch finishes")
+            self.fetch_finishes.start()
+        if not self.team_battle_standing.is_running():
+            logger.info("starting teambattle")
+            self.team_battle_standing.start()
 
     def cog_unload(self):
-        self.fetch_finishes.cancel()
+        if self.fetch_finishes.is_running():
+            logger.info("Canceling fetch finishes")
+            self.fetch_finishes.cancel()
+        if self.team_battle_standing.is_running():
+            logger.info("Canceling teambattle")
+            self.team_battle_standing.cancel()
+        for handler in logger.handlers[:]:
+            logger.removeHandler(handler)
+            handler.close()
 
     @app_commands.command(name="helmboard")
     async def helm_leaderboard(self, interaction: discord.Interaction) -> None:
         """Show helm event leaderboard"""
         await interaction.response.defer(thinking=True)
-        data = std.get_all_data()
-        data_n = [(player, len([mapnr for mapnr in fins.keys() if int(mapnr) > (CFG.event.edition-1)*75])) for player,fins in data.items()]
+        player_data = std.get_all_data()
+        data_n = [(sum(1 for entry in data["finishes"] if entry["number"] > (botils.config.CFG.BOT["event"]["edition"]-1)*75)) for _, data in player_data.items()]
         data_sorted = sorted(data_n, key=lambda x: x[1], reverse=True)
         unzipped = list(zip(*data_sorted))
         names, fin_cnt = '\n'.join(unzipped[0]), '**' + '\n'.join(str(x) for x in unzipped[1]) + '**'
@@ -32,17 +52,18 @@ class KFAEvent(commands.Cog, name="EventBattleCog"):
             embed=_create_embed(
                 title="Helm Leaderboard",
                 data={
-                    "Rank": "**" + '.\n'.join(str(x) for x in range(1, 1 + len(data.keys()))) + "**",
+                    "Rank": "**" + '.\n'.join(str(x) for x in range(1, 1 + len(player_data.keys()))) + "**",
                     "Name": names,
                     "Finish count": fin_cnt,
                 },
             )
         )
 
-    @tasks.loop(minutes=CFG["event"]["interval"])
+    @tasks.loop(minutes=botils.config.CFG.BOT["event"]["interval"])
     async def fetch_finishes(self):
         players = std.get_all_data()
         for player, data in players.items():
+            nfpb = []
             fetched_fins = fetch_player_finishes(player, data["id"])
             cleaned_fins = filter_duplicates(fetched_fins)
             # skip if Kacky-API failed at any point
@@ -52,7 +73,7 @@ class KFAEvent(commands.Cog, name="EventBattleCog"):
                 )
                 continue
             nfpb = get_latest_finishes(data["finishes"], cleaned_fins)
-            nfpb = cleaned_fins[:2]
+            nfpb = cleaned_fins[:1]
             # self-correct if writing to file failed at any point
             if len(cleaned_fins) // 2 > len(data["finishes"]):
                 logger.error(
@@ -70,29 +91,28 @@ class KFAEvent(commands.Cog, name="EventBattleCog"):
                     embed=embed_msg
                 )
                 
-            std.add_or_update_player(player, data["id"], cleaned_fins)
+            std.update_player_fins(player, nfpb)
         logger.info("Done fetching all players")
 
 
     @tasks.loop(hours=6)
     async def team_battle_standing(self):
         players = std.get_all_data()
-        team1_score = 0
-        team2_score = 0
-        for player, fins in players.items():
-            player_score = len([mapnr for mapnr in fins.keys() if int(mapnr) > (CFG.event.edition-1)*75])
-            print(player)
-            print(player_score)
-            if player in CFG.event.team1:
-                team1_score += player_score
-            elif player in CFG.event.team2:
-                team2_score += player_score
-            else:
-                continue
-
-        await self.bot.get_channel(CFG["bot"]["teambattle_channel"]).send(
+        cfg = std.get_config()
+        battlestats = {}
+        for team in cfg["event"]["teams"]:
+            battlestats[team["name"]] = 0
+        print(battlestats)
+        for player, data in players.items():
+            pscore = sum(1 for entry in data["finishes"] if entry["number"] > (cfg["event"]["edition"]-1)*75)
+            for i, team in enumerate(botils.config.CFG.BOT["event"]["teams"]):
+                if player in team["members"]:
+                    battlestats[team["name"]] += pscore
+                    break  # found the team, stop searching
+        
+        await self.bot.get_channel(botils.config.CFG.BOT["bot"]["teambattle_channel"]).send(
             embed=_create_embed(
-                title="Team Standings", data={"Team1": team1_score, "Team2": team2_score}
+                title="Team Standings", data=battlestats
             )
         )
         logger.info("Done calculating team standings")

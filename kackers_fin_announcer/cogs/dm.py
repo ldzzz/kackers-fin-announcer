@@ -1,10 +1,13 @@
+import botils.config
 import botils.shelfer as std
 import discord
 from botils.fetch import fetch_player_finishes
-from botils.load_config_logger import CFG, logger
+from botils.load_config_logger import get_module_logger
 from botils.utils import _create_embed, filter_duplicates, parse_teams
 from discord import app_commands
 from discord.ext import commands
+
+logger = get_module_logger(__name__)
 
 
 class KFADm(commands.Cog, name="DMCog"):
@@ -85,7 +88,7 @@ class KFADm(commands.Cog, name="DMCog"):
 
     @cfg_group.command(name="bot")
     @app_commands.choices(mode=[app_commands.Choice(name="Hunting", value="hunting"), app_commands.Choice(name="Event", value="event")])
-    async def config_bot(self, interaction: discord.Interaction, mode: app_commands.Choice[str], finannouncement_channel: int=CFG["bot"]["finannouncement_channel"], teambattle_channel: int=CFG["bot"]["teambattle_channel"], thumbnails:str=CFG["bot"]["thumbnails"]) -> None:
+    async def config_bot(self, interaction: discord.Interaction, mode: app_commands.Choice[str], finannouncement_channel: int=botils.config.CFG.BOT["bot"]["finannouncement_channel"], teambattle_channel: int=botils.config.CFG.BOT["bot"]["teambattle_channel"], thumbnails:str=botils.config.CFG.BOT["bot"]["thumbnails"]) -> None:
         """Set general bot configuration
         
         Args:
@@ -95,9 +98,8 @@ class KFADm(commands.Cog, name="DMCog"):
         """
         await interaction.response.defer(thinking=True)
         logger.info("Configuring bot")
-        std.update_bot_config({"mode":mode.value, "finannouncement_channel":finannouncement_channel, "teambattle_channel":teambattle_channel, "thumbnails": thumbnails})
         try:
-            if CFG["bot"]["mode"] != mode:
+            if botils.config.CFG.BOT["bot"]["mode"] != mode:
                 logger.info("Changing modes")
                 if mode.value == "hunting":
                     logger.info("Unloaded cogs.event")
@@ -105,16 +107,17 @@ class KFADm(commands.Cog, name="DMCog"):
                 elif mode == "event":
                     logger.info("Unloaded cogs.hunting")
                     await self.bot.unload_extension("cogs.hunting")
-                await self.bot.load_extension(f"cogs.{mode}")
+                await self.bot.load_extension(f"cogs.{mode.value}")
+            std.update_bot_config({"mode":mode.value, "finannouncement_channel":finannouncement_channel, "teambattle_channel":teambattle_channel, "thumbnails": thumbnails})
         except Exception as e:
             logger.error(e)
             await interaction.followup.send("Could not change modes. Check bot logs for further info")
         await interaction.followup.send(
-            embed=_create_embed(title=f"Bot configuration", data=CFG["bot"])
+            embed=_create_embed(title=f"Bot configuration", data=botils.config.CFG.BOT["bot"])
         )
 
     @cfg_group.command(name="hunting")
-    async def config_bot(self, interaction: discord.Interaction, interval: int=CFG["hunting"]["interval"], mappack_count: int=CFG["hunting"]["mappack_count"], pb_limit: int=CFG["hunting"]["pb_limit"], api: str=CFG["hunting"]["api"]) -> None:
+    async def config_bot(self, interaction: discord.Interaction, interval: int=botils.config.CFG.BOT["hunting"]["interval"], mappack_count: int=botils.config.CFG.BOT["hunting"]["mappack_count"], pb_limit: int=botils.config.CFG.BOT["hunting"]["pb_limit"], api: str=botils.config.CFG.BOT["hunting"]["api"]) -> None:
         """Set hunting configuration
         
         Args:
@@ -125,13 +128,17 @@ class KFADm(commands.Cog, name="DMCog"):
         """
         await interaction.response.defer(thinking=True)
         logger.info("Configuring hunting")
+        if interval != botils.config.CFG.BOT["hunting"]["interval"] and botils.config.CFG.BOT["bot"]["mode"] == "hunting":
+            logger.info("Realoding hunting cog")
+            await self.bot.unload_extension("cogs.hunting")
+            await self.bot.load_extension("cogs.hunting")
         std.update_hunting_config({"api":api, "interval":interval, "mappack_count":mappack_count, "pb_limit":pb_limit})
         await interaction.followup.send(
-            embed=_create_embed(title=f"Hunting configuration", data=CFG["hunting"])
+            embed=_create_embed(title=f"Hunting configuration", data=botils.config.CFG.BOT["hunting"])
         )
 
     @cfg_group.command(name="event")
-    async def config_bot(self, interaction: discord.Interaction, interval: int=CFG["event"]["interval"], mappack_count: int=CFG["event"]["mappack_count"], pb_limit: int=CFG["event"]["pb_limit"], api: str=CFG["event"]["api"], teams:  discord.Attachment=None) -> None:
+    async def config_bot(self, interaction: discord.Interaction, battle_interval: int=botils.config.CFG.BOT["event"]["battle_interval"], interval: int=botils.config.CFG.BOT["event"]["interval"], mappack_count: int=botils.config.CFG.BOT["event"]["mappack_count"], pb_limit: int=botils.config.CFG.BOT["event"]["pb_limit"], api: str=botils.config.CFG.BOT["event"]["api"], teams:  discord.Attachment=None, edition: int=botils.config.CFG.BOT["event"]["edition"]) -> None:
         """Set hunting configuration
         
         Args:
@@ -143,12 +150,17 @@ class KFADm(commands.Cog, name="DMCog"):
         await interaction.response.defer(thinking=True)
         logger.info("Configuring event")
         if teams:
-            parsed_teams = parse_teams(await teams.read())
+            teams_in = await teams.read()
+            parsed_teams = parse_teams(teams_in)
         else:
-            parsed_teams = CFG["event"]["teams"]
-        std.update_event_config({"api":api, "interval":interval, "mappack_count":mappack_count, "pb_limit":pb_limit, "teams":parsed_teams})
+            parsed_teams = botils.config.CFG.BOT["event"]["teams"]
+        if (battle_interval != botils.config.CFG.BOT["event"]["battle_interval"] or interval != botils.config.CFG.BOT["event"]["interval"]) and botils.config.CFG.BOT["bot"]["mode"] == "event":
+            logger.info("Realoding event cog")
+            await self.bot.unload_extension("cogs.event")
+            await self.bot.load_extension("cogs.event")
+        std.update_event_config({"api":api, "battle_interval": battle_interval, "interval":interval, "mappack_count":mappack_count, "pb_limit":pb_limit, "teams":parsed_teams, "edition": edition})
         await interaction.followup.send(
-            embed=_create_embed(title=f"Event configuration", data=CFG["event"])
+            embed=_create_embed(title=f"Event configuration", data=botils.config.CFG.BOT["event"])
         )
 
     @cfg_group.command(name="get")

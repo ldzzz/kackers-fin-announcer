@@ -1,7 +1,9 @@
 import shelve
 
-from botils.load_config_logger import CFG, SECRETS, logger
+import botils.config
+from botils.load_config_logger import get_module_logger
 
+logger = get_module_logger(__name__)
 
 def get_all_players() -> list:
     """Get a list of all players
@@ -9,7 +11,7 @@ def get_all_players() -> list:
     Returns:
         list: list of all player usernames
     """
-    with shelve.open(filename=SECRETS["storage"]) as std:
+    with shelve.open(filename=botils.config.CFG.SECRETS["storage"]) as std:
         return list(std.keys())
 
 
@@ -20,11 +22,20 @@ def get_all_data() -> dict:
         list: list of all registered players and their finishes
     """
     data = {}
-    with shelve.open(filename=SECRETS["storage"]) as std:
+    with shelve.open(filename=botils.config.CFG.SECRETS["storage"]) as std:
         for player in list(std.keys()):
             data[player] = std[player]
     return data
 
+def update_player_fins(username: str, new_fins: dict) -> None:
+    """Adds or updates player finishes
+
+    Args:
+        username (str): player username
+        fins (list): list of finishes and their metadata
+    """
+    with shelve.open(filename=botils.config.CFG.SECRETS["storage"], writeback=True) as std:
+        std[username]["finishes"].extend(new_fins)
 
 def add_or_update_player(username: str, pid: int, fins: dict) -> None:
     """Adds or updates player data
@@ -34,7 +45,7 @@ def add_or_update_player(username: str, pid: int, fins: dict) -> None:
         pid (int): player id from kacky.gg
         fins (dict): dict of finishes and their metadata
     """
-    with shelve.open(filename=SECRETS["storage"], writeback=True) as std:
+    with shelve.open(filename=botils.config.CFG.SECRETS["storage"], writeback=True) as std:
         std[username] = {"id": pid, "finishes": fins}
 
 
@@ -44,7 +55,7 @@ def delete_player(username: str) -> None:
     Args:
         username (str): Player username to delete
     """
-    with shelve.open(filename=SECRETS["storage"], writeback=True) as std:
+    with shelve.open(filename=botils.config.CFG.SECRETS["storage"], writeback=True) as std:
         try:
             del std[username]
         except KeyError:
@@ -60,7 +71,7 @@ def update_bot_config(bot: dict) -> None:
         bot (dict): All bot data needed
     """
     try:
-        with shelve.open(filename=SECRETS["config"], writeback=True) as std:
+        with shelve.open(filename=botils.config.CFG.SECRETS["config"], writeback=True) as std:
             std["bot"] = bot
         update_CFG()
     except Exception as e:
@@ -73,7 +84,7 @@ def update_hunting_config(hunting: dict) -> None:
         hunting (dict): All hunting data needed
     """
     try:
-        with shelve.open(filename=SECRETS["config"], writeback=True) as std:
+        with shelve.open(filename=botils.config.CFG.SECRETS["config"], writeback=True) as std:
             std["hunting"] = hunting
         update_CFG()
     except Exception as e:
@@ -86,7 +97,7 @@ def update_event_config(event: dict) -> None:
         event (dict): All event data needed
     """
     try:
-        with shelve.open(filename=SECRETS["config"], writeback=True) as std:
+        with shelve.open(filename=botils.config.CFG.SECRETS["config"], writeback=True) as std:
             std["event"] = event
         update_CFG()
     except Exception as e:
@@ -95,14 +106,13 @@ def update_event_config(event: dict) -> None:
 def get_config() -> dict:
     """Gets saved config if it exists"""
     data = {}
-    with shelve.open(filename=SECRETS["config"], writeback=True) as std:
+    with shelve.open(filename=botils.config.CFG.SECRETS["config"], writeback=True) as std:
         for cfg in list(std.keys()):
             data[cfg] = std[cfg]
     return data
 
 def update_CFG() -> None:
-    global CFG
     logger.info("Updating CFG")
-    with shelve.open(filename=SECRETS["config"], writeback=True) as std:
+    with shelve.open(filename=botils.config.CFG.SECRETS["config"], writeback=True) as std:
         for cfg in list(std.keys()):
-            CFG[cfg] = std[cfg]
+            botils.config.CFG.BOT[cfg] = std[cfg]
