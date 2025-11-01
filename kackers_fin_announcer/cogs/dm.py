@@ -83,7 +83,6 @@ class KFADm(commands.Cog, name="DMCog"):
         """
         await interaction.response.defer(thinking=True)
         await channel.send(msg)  # no need to get_channel manually
-        await interaction.response.send_message(f"Sent message to {channel.mention}")
 
     @app_commands.command(name="remove")
     async def remove_user(
