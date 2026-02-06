@@ -102,6 +102,47 @@ class KFADm(commands.Cog, name="DMCog"):
             embed=_create_embed(title=f"{username} removed")
         )
 
+    @app_commands.command(name="readd_all")
+    async def read_all(
+        self,
+        interaction: discord.Interaction
+    ) -> None:
+        await interaction.response.defer(thinking=True)
+
+        #get all players
+        data = std.get_all_data()
+        names = data.keys()
+        #for player in list(data.keys()):
+        #    names += f"{player}\n"
+        #    ids += f"{data[player]['id']}\n"
+
+        for player in list(names):
+            std.delete_player(player)
+
+            pid = data[player]['id']
+
+            fins = fetch_player_finishes(player, pid)
+            cleaned_fins = filter_duplicates(fins)
+            if fins:
+                std.add_or_update_player(player, pid, cleaned_fins)
+
+            else:
+                await interaction.followup.send(
+                    embed=_create_embed(
+                        title=f"Player not added",
+                        data={
+                            "Comment": f"Player {player} doesn't exist or Kacky API can't find them. Check your inputs"
+                        },
+                    )
+                )
+        
+        await interaction.followup.send(
+            embed=_create_embed(
+                title=f"Players readded",
+                data={"Done readding players"},
+            )
+        )
+
 
     @app_commands.command(name="list")
     async def list_players(self, interaction: discord.Interaction) -> None:
