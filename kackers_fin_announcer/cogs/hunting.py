@@ -13,6 +13,11 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
     def __init__(self, bot):
         self.bot = bot
         logger.info("Updating intervals for Hunting Cog")
+
+        #Get kacky reloaded map UIDS from file
+        file = open(botils.config.CFG.BOT['map_ids'])
+        self.krMapUIDs = file.readline().split("\\n")
+
         self.fetch_finishes.change_interval(minutes=botils.config.CFG.BOT["hunting"]["interval"])
         if not self.fetch_finishes.is_running():
             logger.info("starting fetch finishes")
@@ -43,6 +48,10 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
                 )
                 nfpb = []
             for fin in nfpb:
+                #differentiate between reloaded and remixed by checking mapUID
+                if not fin['mapUid'] in self.krMapUIDs:
+                    continue
+
                 embed_msg = build_announce_embed(
                         {"username": player, "fincount": len(cleaned_fins)}, fin
                     )
