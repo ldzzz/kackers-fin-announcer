@@ -1,10 +1,26 @@
 import ast
 
 import requests
+import botils
 from botils.load_config_logger import get_module_logger
 from requests.auth import HTTPBasicAuth
 
 logger = get_module_logger(__name__)
+
+def get_KR_map_Ids():
+    logger.info("Parsing kr map Ids")
+
+    file = open(botils.config.CFG.SECRETS['kr_map_ids'])
+    krMapUIDs = file.readline().split("\\n")
+
+    return krMapUIDs
+
+
+krMapUids = get_KR_map_Ids()
+
+def isReloaded(uid):
+    return uid in krMapUids
+
 def get_top_two(mapNr):
     pass
 """

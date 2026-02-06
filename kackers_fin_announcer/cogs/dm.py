@@ -12,6 +12,7 @@ logger = get_module_logger(__name__)
 
 class KFADm(commands.Cog, name="DMCog"):
     cfg_group = app_commands.Group(name="config", description="Configure bot dynamically")
+    helmboard_group = app_commands.Group(name="helmboard", description="Helmboards")
     def __init__(self, bot):
         self.bot = bot
         super().__init__()
@@ -31,13 +32,15 @@ class KFADm(commands.Cog, name="DMCog"):
             )
             return
         fins = fetch_player_finishes(username, pid)
-        cleaned_fins = filter_duplicates(fins)
+        cleaned_fins_kr = filter_duplicates(fins[0])
+        cleaned_fins_kx = filter_duplicates(fins[1])
         if fins:
-            std.add_or_update_player(username, pid, cleaned_fins)
+            std.add_or_update_player(username, pid, cleaned_fins_kr, cleaned_fins_kx)
             await interaction.followup.send(
                 embed=_create_embed(
                     title=f"Player added",
-                    data={"Player name": username, "Player id": pid, "Finish count": len(cleaned_fins)},
+                    data={"Player name": username, "Player id": pid,
+                           "KR Finish count": len(cleaned_fins_kr),  "KX Finish count": len(cleaned_fins_kx)},
                 )
             )
         else:
@@ -50,25 +53,57 @@ class KFADm(commands.Cog, name="DMCog"):
                 )
             )
 
-    @app_commands.command(name="helmboard")
-    async def helm_leaderboard(self, interaction: discord.Interaction) -> None:
-        """Show helm leaderboard"""
+    @app_commands.command(name="add_list")
+    async def add_user_list(self, interaction: discord.Interaction, file: discord.Attachment) -> None:
+        """Add a player to be tracked
+
+        Args:
+            username (str): Ubisoft username
+            pid (int): ID from kacky.gg
+        """
+        if not file.filename.endswith(".txt"):
+            await interaction.response.send_message("Only .txt files allowed.")
+            return
+
+        logger.info("Starting adding players")
+
         await interaction.response.defer(thinking=True)
-        player_data = std.get_all_data()
-        if botils.config.CFG.BOT["bot"]["mode"] == "event":
-            data_n = [(player, (sum(1 for entry in data["finishes"] if entry["number"] > (botils.config.CFG.BOT["event"]["edition"]-1)*75))) for player, data in player_data.items()]
-        else:
-            data_n = [(player, len(data["finishes"])) for player, data in player_data.items()]
-        data_sorted = sorted(data_n, key=lambda x: x[1], reverse=True)
-        unzipped = list(zip(*data_sorted))
-        names, fin_cnt = '\n'.join(unzipped[0]), '**' + '\n'.join(str(x) for x in unzipped[1]) + '**'
+
+        file_bytes = await file.read()
+        content = file_bytes.decode("utf-8")
+
+        logger.info("Starting adding players")
+        parts = content.split('\n')
+        logger.info(parts)
+        playercount = int((len(parts) / 2))
+        logger.info(f"{len(parts)}, {playercount}")
+
+        data = []
+        for i in range(0, playercount):
+            name = parts[i][:-1]
+            id_ = parts[i + playercount][:-1]
+            logger.info(name + ' ' + id_)
+            data.append((parts[i][:-1], int(parts[i + playercount][:-1])))
+            logger.info(data[i])
+
+        for player in data:
+            username = player[0]
+            pid = player[1]
+
+            fins = fetch_player_finishes(username, pid)
+            cleaned_fins_kr = filter_duplicates(fins[0])
+            cleaned_fins_kx = filter_duplicates(fins[1])
+            if fins:
+                std.add_or_update_player(username, pid, cleaned_fins_kr, cleaned_fins_kx)
+                logger.info("Added " + username)
+            else:
+                logger.info("Did not add " + username)
+
         await interaction.followup.send(
             embed=_create_embed(
-                title="Helm Leaderboard",
+                title=f"Added player list",
                 data={
-                    "Rank": "**" + '.\n'.join(str(x) for x in range(1, 1 + len(player_data.keys()))) + "**",
-                    "Name": names,
-                    "Finish count": fin_cnt,
+                    "Comment": f"Added {len(data)} players"
                 },
             )
         )
@@ -102,48 +137,6 @@ class KFADm(commands.Cog, name="DMCog"):
             embed=_create_embed(title=f"{username} removed")
         )
 
-    @app_commands.command(name="readd_all")
-    async def read_all(
-        self,
-        interaction: discord.Interaction
-    ) -> None:
-        await interaction.response.defer(thinking=True)
-
-        #get all players
-        data = std.get_all_data()
-        names = data.keys()
-        #for player in list(data.keys()):
-        #    names += f"{player}\n"
-        #    ids += f"{data[player]['id']}\n"
-
-        for player in list(names):
-            std.delete_player(player)
-
-            pid = data[player]['id']
-
-            fins = fetch_player_finishes(player, pid)
-            cleaned_fins = filter_duplicates(fins)
-            if fins:
-                std.add_or_update_player(player, pid, cleaned_fins)
-
-            else:
-                await interaction.followup.send(
-                    embed=_create_embed(
-                        title=f"Player not added",
-                        data={
-                            "Comment": f"Player {player} doesn't exist or Kacky API can't find them. Check your inputs"
-                        },
-                    )
-                )
-        
-        await interaction.followup.send(
-            embed=_create_embed(
-                title=f"Players readded",
-                data={"Done readding players"},
-            )
-        )
-
-
     @app_commands.command(name="list")
     async def list_players(self, interaction: discord.Interaction) -> None:
         """List all registered players"""
@@ -152,7 +145,7 @@ class KFADm(commands.Cog, name="DMCog"):
         names, fins, ids = "", "", ""
         for player in list(data.keys()):
             names += f"{player}\n"
-            fins += f"**{len(data[player]['finishes'])}**\n"
+            fins += f"**{len(data[player]['kr_finishes'])}**\n"
             ids += f"{data[player]['id']}\n"
         await interaction.followup.send(
             embed=_create_embed(
@@ -161,9 +154,82 @@ class KFADm(commands.Cog, name="DMCog"):
             )
         )
 
+    @app_commands.command(name="player_stats")
+    async def stats(self, interaction: discord.Interaction, username: str) -> None:
+        """Get general player stats"""
+        await interaction.response.defer(thinking=True)
+        if username not in std.get_all_players():
+            await interaction.followup.send(
+                embed=_create_embed(title=f"Player does not exist added")
+            )
+            return
+        
+        data = std.get_all_data()
+        logger.info(data[username])
+
+        await interaction.followup.send(
+            embed=_create_embed(
+                title=f"Registered players ({len(list(data.keys()))})",
+                data={"Name": username, "Finish count": data[username]['finishes'], "ID": data[username]['id']},
+            )
+        )
+
+    @helmboard_group.command(name="kr")
+    async def helm_leaderboard(self, interaction: discord.Interaction) -> None:
+        """Show helm leaderboard"""
+        await interaction.response.defer(thinking=True)
+        player_data = std.get_all_data()
+        if botils.config.CFG.BOT["bot"]["mode"] == "event":
+            data_n = [(player, (sum(1 for entry in data["kr_finishes"] if entry["number"] > (botils.config.CFG.BOT["event"]["edition"]-1)*75))) for player, data in player_data.items()]
+        else:
+            data_n = [(player, len(data["kr_finishes"])) for player, data in player_data.items()]
+        data_sorted = sorted(data_n, key=lambda x: x[1], reverse=True)
+        unzipped = list(zip(*data_sorted))
+        names, fin_cnt = '\n'.join(unzipped[0]), '**' + '\n'.join(str(x) for x in unzipped[1]) + '**',
+        await interaction.followup.send(
+            embed=_create_embed(
+                title="Helm Leaderboard",
+                data={
+                    "Rank": "**" + '.\n'.join(str(x) for x in range(1, 1 + len(player_data.keys()))) + "**",
+                    "Name": names,
+                    "Finish count KR": fin_cnt
+                },
+            )
+        )
+
+    @helmboard_group.command(name="kx")
+    async def helm_leaderboard(self, interaction: discord.Interaction) -> None:
+        """Show helm leaderboard"""
+        await interaction.response.defer(thinking=True)
+        player_data = std.get_all_data()
+        if botils.config.CFG.BOT["bot"]["mode"] == "event":
+            data_n = [(player, (sum(1 for entry in data["kr_finishes"] if entry["number"] > (botils.config.CFG.BOT["event"]["edition"]-1)*75))) for player, data in player_data.items()]
+        else:
+            data_n = [(player, len(data["kx_finishes"])) for player, data in player_data.items()]
+        data_sorted = sorted(data_n, key=lambda x: x[1], reverse=True)
+        unzipped = list(zip(*data_sorted))
+        names, fin_cnt = '\n'.join(unzipped[0]), '**' + '\n'.join(str(x) for x in unzipped[1]) + '**',
+        await interaction.followup.send(
+            embed=_create_embed(
+                title="Helm Leaderboard",
+                data={
+                    "Rank": "**" + '.\n'.join(str(x) for x in range(1, 1 + len(player_data.keys()))) + "**",
+                    "Name": names,
+                    "Finish count KR": fin_cnt
+                },
+            )
+        )
+
     @cfg_group.command(name="bot")
     @app_commands.choices(mode=[app_commands.Choice(name="Hunting", value="hunting"), app_commands.Choice(name="Event", value="event")])
-    async def config_bot(self, interaction: discord.Interaction, mode: app_commands.Choice[str], finannouncement_channel: str=str(botils.config.CFG.BOT["bot"]["finannouncement_channel"]), teambattle_channel: str=str(botils.config.CFG.BOT["bot"]["teambattle_channel"]), thumbnails:str=botils.config.CFG.BOT["bot"]["thumbnails"]) -> None:
+    async def config_bot(self, 
+                         interaction: discord.Interaction, 
+                         mode: app_commands.Choice[str], 
+                         finannouncement_channel_kr: str=str(botils.config.CFG.BOT["bot"]["finannouncement_channel_kr"]), 
+                         finannouncement_channel_kx: str=str(botils.config.CFG.BOT["bot"]["finannouncement_channel_kx"]), 
+                         teambattle_channel: str=str(botils.config.CFG.BOT["bot"]["teambattle_channel"]), 
+                         thumbnails_kr:str=botils.config.CFG.BOT["bot"]["thumbnails_kr"],
+                         thumbnails_kx:str=botils.config.CFG.BOT["bot"]["thumbnails_kx"],) -> None:
         """Set general bot configuration
         
         Args:
@@ -184,7 +250,12 @@ class KFADm(commands.Cog, name="DMCog"):
                     await self.bot.unload_extension("cogs.hunting")
                 if f"cogs.{mode.value}" not in self.bot.extensions:
                     await self.bot.load_extension(f"cogs.{mode.value}")
-            std.update_bot_config({"mode":mode.value, "finannouncement_channel":int(finannouncement_channel), "teambattle_channel":int(teambattle_channel), "thumbnails": thumbnails})
+            std.update_bot_config({"mode":mode.value, 
+                                   "finannouncement_channel_kr":int(finannouncement_channel_kr), 
+                                   "finannouncement_channel_kx":int(finannouncement_channel_kx), 
+                                   "teambattle_channel":int(teambattle_channel), 
+                                   "thumbnails_kr": thumbnails_kr,
+                                   "thumbnails_kx": thumbnails_kx})
         except Exception as e:
             logger.error(e)
             await interaction.followup.send("Could not change modes. Check bot logs for further info")

@@ -13,74 +13,72 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
     def __init__(self, bot):
         self.bot = bot
         logger.info("Updating intervals for Hunting Cog")
-
-        #Get kacky reloaded map UIDS from file
-        file = open(botils.config.CFG.BOT['map_ids'])
-        self.krMapUIDs = file.readline().split("\\n")
-
+        
         self.fetch_finishes.change_interval(minutes=botils.config.CFG.BOT["hunting"]["interval"])
         if not self.fetch_finishes.is_running():
             logger.info("starting fetch finishes")
             self.fetch_finishes.start()
 
-        if self.fetch_finishes.is_running():
-            logger.info("Canceling fetch finishes")
-            self.fetch_finishes.cancel()
+        #if self.fetch_finishes.is_running():
+        #    logger.info("Canceling fetch finishes")
+        #    self.fetch_finishes.cancel()
 
     @tasks.loop(minutes=botils.config.CFG.BOT["hunting"]["interval"])
     async def fetch_finishes(self):
+        logger.info("Started fetching all players")
         players = std.get_all_data()
         for player, data in players.items():
             fetched_fins = fetch_player_finishes(player, data["id"])
-            cleaned_fins = filter_duplicates(fetched_fins)
+            cleaned_fins_kr = filter_duplicates(fetched_fins[0])
+            cleaned_fins_kx = filter_duplicates(fetched_fins[1])
             # skip if Kacky-API failed at any point
             if not fetched_fins:
                 logger.error(
-                    f"This doesnt look right:\n{player}: old_cnt={len(data['finishes'])}, new_cnt={len(cleaned_fins)} -> Skipping"
+                    f"This doesnt look right:\n{player}: old_cnt={len(data['finishes'])}, new_cnt={len(cleaned_fins_kr)} -> Skipping"
                 )
                 continue
-            nfpb = get_latest_finishes(data["finishes"], cleaned_fins)
-            nfpb = nfpb[:1]
+            
+            nfpbkr = get_latest_finishes(data["kr_finishes"], cleaned_fins_kr)
+            nfpbkr = nfpbkr[:1]
             # self-correct if writing to file failed at any point
-            if len(cleaned_fins) // 2 > len(data["finishes"]):
+            if len(cleaned_fins_kr) // 2 > len(data["kr_finishes"]):
                 logger.error(
-                    f"This doesnt look right:\n{player}: old_cnt={len(data['finishes'])}, new_cnt={len(fetched_fins)} -> Self-correcting"
+                    f"This doesnt look right:\n{player}: old_cnt={len(data['finishes'])}, new_cnt={len(cleaned_fins_kr)} -> Self-correcting"
                 )
-                nfpb = []
-            for fin in nfpb:
-                #differentiate between reloaded and remixed by checking mapUID
-                if not fin['mapUid'] in self.krMapUIDs:
-                    continue
+                nfpbkr = []
 
+            for fin in nfpbkr:
                 embed_msg = build_announce_embed(
-                        {"username": player, "fincount": len(cleaned_fins)}, fin
+                        {"username": player, "fincount": len(cleaned_fins_kr)}, fin, True
                     )
 
                 # TODO: also will neeed fixing
                 logger.info("Sending Message")
-                await self.bot.get_channel(self.bot.fin_channel.id).send(
+                await self.bot.get_channel(self.bot.kr_fin_channel.id).send(
                     embed=embed_msg
                 )
-                #check for offline wr
-                #logger.info("Sending message 1")
-                #offlineTopTwo = get_top_two(fin['mapnr'])
-                #if offlineTopTwo[0] == fin['score']:
-                #    logger.info("Sending Message")
-                #    await self.bot.get_channel(self.bot.fin_channel.id).send(
-                #        "<@&1349723580203536527>",
-                #        embed=embed_msg
-                #    )
-                #else:
-                #    logger.info("Sending Message")
-                #    await self.bot.get_channel(self.bot.fin_channel.id).send(
-                #        embed=embed_msg
-                #    )
 
-                #ping wr role
-                #if fin['kacky_rank'] == 1:
-                #    await self.bot.get_channel(self.bot.fin_channel.id).send("<@&1349723580203536527>")
+            nfpbkx = get_latest_finishes(data["kx_finishes"], cleaned_fins_kx)
+            nfpbkx = nfpbkx[:1]
+            # self-correct if writing to file failed at any point
+            if len(cleaned_fins_kx) // 2 > len(data["kx_finishes"]):
+                logger.error(
+                    f"This doesnt look right:\n{player}: old_cnt={len(data['finishes'])}, new_cnt={len(cleaned_fins_kx)} -> Self-correcting"
+                )
+                nfpbkx = []
 
-            std.add_or_update_player(player, data["id"], cleaned_fins)
+            for fin in nfpbkx:
+                embed_msg = build_announce_embed(
+                        {"username": player, "fincount": len(cleaned_fins_kx)}, fin, False
+                    )
+
+                # TODO: also will neeed fixing
+                logger.info("Sending Message")
+                await self.bot.get_channel(self.bot.kx_fin_channel.id).send(
+                    embed=embed_msg
+                )
+            std.add_or_update_player(player, data["id"], cleaned_fins_kr, cleaned_fins_kx)
+
         logger.info("Done fetching all players")
 
     @fetch_finishes.before_loop

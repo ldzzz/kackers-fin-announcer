@@ -27,7 +27,7 @@ def get_all_data() -> dict:
             data[player] = std[player]
     return data
 
-def update_player_fins(username: str, new_fins: dict) -> None:
+def update_player_fins(username: str, new_kr_fins: dict, new_kx_fins) -> None:
     """Adds or updates player finishes
 
     Args:
@@ -35,10 +35,15 @@ def update_player_fins(username: str, new_fins: dict) -> None:
         fins (list): list of finishes and their metadata
     """
     with shelve.open(filename=botils.config.CFG.SECRETS["storage"], writeback=True) as std:
-        logger.info(f"Adding {len(new_fins)} to already {len(std[username]['finishes'])}")
-        std[username]["finishes"].extend(new_fins)
+        if new_kr_fins != None:
+            logger.info(f"Adding {len(new_kr_fins)} to already {len(std[username]['finishes'])}")
+            std[username]["kr_finishes"].extend(new_kr_fins)
 
-def add_or_update_player(username: str, pid: int, fins: dict) -> None:
+        if new_kx_fins != None:
+            logger.info(f"Adding {len(new_kx_fins)} to already {len(std[username]['finishes'])}")
+            std[username]["kx_finishes"].extend(new_kx_fins)
+
+def add_or_update_player(username: str, pid: int, krFins: dict, kxFins: dict) -> None:
     """Adds or updates player data
 
     Args:
@@ -47,7 +52,7 @@ def add_or_update_player(username: str, pid: int, fins: dict) -> None:
         fins (dict): dict of finishes and their metadata
     """
     with shelve.open(filename=botils.config.CFG.SECRETS["storage"], writeback=True) as std:
-        std[username] = {"id": pid, "finishes": fins}
+        std[username] = {"id": pid, "kr_finishes": krFins, "kx_finishes": kxFins}
 
 
 def delete_player(username: str) -> None:

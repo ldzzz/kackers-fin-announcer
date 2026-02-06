@@ -24,7 +24,8 @@ class KackersFinAnnouncer(commands.Bot):
         update_bot_config(botils.config.CFG.BOT["bot"])
         update_hunting_config(botils.config.CFG.BOT["hunting"])
         update_event_config(botils.config.CFG.BOT["event"])
-    fin_channel = discord.Object(id=botils.config.CFG.BOT["bot"]["finannouncement_channel"])
+    kr_fin_channel = discord.Object(id=botils.config.CFG.BOT["bot"]["finannouncement_channel_kr"])
+    kx_fin_channel = discord.Object(id=botils.config.CFG.BOT["bot"]["finannouncement_channel_kx"])
     server = discord.Object(id=botils.config.CFG.SECRETS["server_id"])
     synced = False
 

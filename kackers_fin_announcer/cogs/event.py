@@ -41,36 +41,61 @@ class KFAEvent(commands.Cog, name="EventBattleCog"):
 
     @tasks.loop(minutes=botils.config.CFG.BOT["event"]["interval"])
     async def fetch_finishes(self):
+        logger.info("Started fetching all players")
         players = std.get_all_data()
         for player, data in players.items():
-            nfpb = []
+
             fetched_fins = fetch_player_finishes(player, data["id"])
-            cleaned_fins = filter_duplicates(fetched_fins)
+            cleaned_fins_kr = filter_duplicates(fetched_fins[0])
+            cleaned_fins_kx = filter_duplicates(fetched_fins[1])
             # skip if Kacky-API failed at any point
             if not fetched_fins:
                 logger.error(
-                    f"This doesnt look right:\n{player}: old_cnt={len(data['finishes'])}, new_cnt={len(cleaned_fins)} -> Skipping"
+                    f"This doesnt look right:\n{player}: old_cnt={len(data['finishes'])}, new_cnt={len(cleaned_fins_kr)} -> Skipping"
                 )
                 continue
-            nfpb = get_latest_finishes(data["finishes"], cleaned_fins)
+
+            nfpbkr = get_latest_finishes(data["kr_finishes"], cleaned_fins_kr)
+            nfpbkr = nfpbkr[:1]
             # self-correct if writing to file failed at any point
-            if len(cleaned_fins) // 2 > len(data["finishes"]):
+            if len(cleaned_fins_kr) // 2 > len(data["kr_finishes"]):
                 logger.error(
-                    f"This doesnt look right:\n{player}: old_cnt={len(data['finishes'])}, new_cnt={len(fetched_fins)} -> Self-correcting"
+                    f"This doesnt look right:\n{player}: old_cnt={len(data['finishes'])}, new_cnt={len(cleaned_fins_kr)} -> Self-correcting"
                 )
-                nfpb = []
-            for fin in nfpb:
+                nfpbkr = []
+
+            for fin in nfpbkr:
                 embed_msg = build_announce_embed(
-                        {"username": player, "fincount": len(cleaned_fins)}, fin
+                        {"username": player, "fincount": len(cleaned_fins_kr)}, fin, True
                     )
 
                 # TODO: also will neeed fixing
                 logger.info("Sending Message")
-                await self.bot.get_channel(self.bot.fin_channel.id).send(
+                await self.bot.get_channel(self.bot.kr_fin_channel.id).send(
                     embed=embed_msg
                 )
-                
-            std.update_player_fins(player, nfpb)
+
+            nfpbkx = get_latest_finishes(data["kx_finishes"], cleaned_fins_kx)
+            nfpbkx = nfpbkx[:1]
+            # self-correct if writing to file failed at any point
+            if len(cleaned_fins_kx) // 2 > len(data["kx_finishes"]):
+                logger.error(
+                    f"This doesnt look right:\n{player}: old_cnt={len(data['finishes'])}, new_cnt={len(cleaned_fins_kx)} -> Self-correcting"
+                )
+                nfpbkx = []
+
+            for fin in nfpbkx:
+                embed_msg = build_announce_embed(
+                        {"username": player, "fincount": len(cleaned_fins_kx)}, fin, False
+                    )
+
+                # TODO: also will neeed fixing
+                logger.info("Sending Message")
+                await self.bot.get_channel(self.bot.kx_fin_channel.id).send(
+                    embed=embed_msg
+                )
+            std.add_or_update_player(player, data["id"], cleaned_fins_kr, cleaned_fins_kx)
+
         logger.info("Done fetching all players")
 
 
@@ -83,7 +108,7 @@ class KFAEvent(commands.Cog, name="EventBattleCog"):
             battlestats[team["name"]] = 0
         print(battlestats)
         for player, data in players.items():
-            pscore = sum(1 for entry in data["finishes"] if entry["number"] > (cfg["event"]["edition"]-1)*75)
+            pscore = sum(1 for entry in data["kr_finishes"] if entry["number"] > (cfg["event"]["edition"]-1)*75)
             for i, team in enumerate(botils.config.CFG.BOT["event"]["teams"]):
                 if player in team["members"]:
                     battlestats[team["name"]] += pscore

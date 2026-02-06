@@ -23,7 +23,7 @@ def _score_to_string(score: int, delta: int) -> str:
     return f"{score_fmt} {diff}"
 
 
-def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
+def build_announce_embed(player: dict, fin: dict, isKr: bool) -> discord.Embed:
     logger.info("Building announce embed")
 
     title = ":checkered_flag: NEW FINISH :checkered_flag:"
@@ -32,12 +32,18 @@ def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
     except Exception as e:
         logger.info("Failed to determine title: ", e)
 
+    thumbnail_url = ""
+    if isKr:
+        thumbnail_url = botils.config.CFG.BOT["bot"]["thumbnails_kr"].replace("MAPNR", str(fin["number"]))
+    else: 
+        thumbnail_url = botils.config.CFG.BOT["bot"]["thumbnails_kx"]
+
     fin_embed = discord.Embed(
         title=(title),
         url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         color=discord.Color.random(),
     )
-    fin_embed.set_thumbnail(url=botils.config.CFG.BOT["bot"]["thumbnails"].replace("MAPNR", str(fin["number"])))
+    fin_embed.set_thumbnail(url=thumbnail_url)
     fin_embed.add_field(name="Player", value=player["username"])
     fin_embed.add_field(name="\u200B", value="\u200B")  # newline
     fin_embed.add_field(name="Map", value=f"#{fin['number']}")
@@ -48,7 +54,8 @@ def build_announce_embed(player: dict, fin: dict) -> discord.Embed:
     # TODO: this will also need updating to be nicer and work with PBs, WRs and stuff
     fin_embed.add_field(name="Total fins", value=player["fincount"])
     #fin_embed.add_field(name="\u200B", value="\u200B")  # newline
-    fin_embed.add_field(name="Date", value=f"{fin['lastImprovedAt']}")
+    date = f"{parse_ts(fin['lastImprovedAt'])}"
+    fin_embed.add_field(name="Date", value=date[:-6])
     #fin_embed.add_field(
     #    name="Rank",
     #    value=f"{fin['kacky_rank']}"
