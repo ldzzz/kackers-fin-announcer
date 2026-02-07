@@ -1,36 +1,34 @@
 {
     "bot": {
-        "token": "secret-discord-bot-token",
-        "server_id": 1234,
-        "finannouncement_channel": 1234,
+        "finannouncement_channel_kr": 1234,
+        "finannouncement_channel_kx": 1234,
         "teambattle_channel": 1234,
-        "thumbnails": "https://fetch.thumbnails.from.here/MAPNR.jpg",
-        "mode": "event || hunting"
+        "thumbnails_kr": "https://cdn.kacky.gg/MAPNR.jpg",
+        "thumbnails_kx": "https://download.dashmap.live/610b1d74-7c0a-41b3-85c4-6dcabedd81b8/KX3.png",
+        "mode": "hunting"
     },
     "hunting": {
-        "api": "https://fetch.finishes.from.here/UID/stats?includeRecords=true",
-        "interval": 30,
+        "api": "api_call",
+        "interval": 1,
         "pb_limit": 5,
-        "mappack_count": 300
+        "mappack_count": 450
     },
     "event": {
-        "api": "https://fetch.finishes.from.here/PID/stats?includeRecords=true&eventId=NAN",
-        "interval": 30,
+        "api": "api_call",
+        "interval": 1,
+        "battle_interval": 60,
         "pb_limit": 5,
         "mappack_count": 75,
+        "edition": 6,
         "teams": [
-            [
-                "team1 p1",
-                "team1 p2"
-            ],
-            [
-                "team2 p1",
-                "team2 p2"
-            ],
-            [
-                "teamN p1",
-                "teamN p2"
-            ]
+            {
+                "name": "RED",
+                "members": []
+            },
+            {
+                "name": "BLUE",
+                "members": []
+            }
         ]
     }
 }

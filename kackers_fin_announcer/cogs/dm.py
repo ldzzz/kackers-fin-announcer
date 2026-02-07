@@ -74,7 +74,6 @@ class KFADm(commands.Cog, name="DMCog"):
 
         logger.info("Starting adding players")
         parts = content.split('\n')
-        logger.info(parts)
         playercount = int((len(parts) / 2))
         logger.info(f"{len(parts)}, {playercount}")
 
@@ -82,28 +81,37 @@ class KFADm(commands.Cog, name="DMCog"):
         for i in range(0, playercount):
             name = parts[i][:-1]
             id_ = parts[i + playercount][:-1]
-            logger.info(name + ' ' + id_)
-            data.append((parts[i][:-1], int(parts[i + playercount][:-1])))
-            logger.info(data[i])
+            data.append((name, id_))
+
+        logger.info(data)
+        successes = 0
+        existing_names = std.get_all_players()
 
         for player in data:
+            logger.info(player)
             username = player[0]
             pid = player[1]
 
+            if username in existing_names:
+                logger.info(username + " exists, removing first")
+                std.delete_player(username)
+
             fins = fetch_player_finishes(username, pid)
+            if not fins:
+                logger.info("Failed to add " + username)
+                continue
+
             cleaned_fins_kr = filter_duplicates(fins[0])
             cleaned_fins_kx = filter_duplicates(fins[1])
-            if fins:
-                std.add_or_update_player(username, pid, cleaned_fins_kr, cleaned_fins_kx)
-                logger.info("Added " + username)
-            else:
-                logger.info("Did not add " + username)
+            std.add_or_update_player(username, pid, cleaned_fins_kr, cleaned_fins_kx)
+            logger.info("Added " + username)
+            successes += 1
 
         await interaction.followup.send(
             embed=_create_embed(
                 title=f"Added player list",
                 data={
-                    "Comment": f"Added {len(data)} players"
+                    "Comment": f"Added {successes} players"
                 },
             )
         )
