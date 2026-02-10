@@ -9,12 +9,14 @@
     },
     "hunting": {
         "api": "api_call",
+        "rank_call": "https://live-services.trackmania.nadeo.live/api/token/leaderboard/group/map",
         "interval": 1,
         "pb_limit": 5,
         "mappack_count": 450
     },
     "event": {
         "api": "api_call",
+        "rank_call": "https://live-services.trackmania.nadeo.live/api/token/leaderboard/group/map",
         "interval": 1,
         "battle_interval": 60,
         "pb_limit": 5,

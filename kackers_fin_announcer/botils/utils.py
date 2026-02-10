@@ -56,11 +56,14 @@ def build_announce_embed(player: dict, fin: dict, isKr: bool) -> discord.Embed:
     #fin_embed.add_field(name="\u200B", value="\u200B")  # newline
     date = f"{parse_ts(fin['lastImprovedAt'])}"
     fin_embed.add_field(name="Date", value=date[:-6])
-    #fin_embed.add_field(
-    #    name="Rank",
-    #    value=f"{fin['kacky_rank']}"
-    #    + (f"({fin['rank_delta']})" if "rank_delta" in fin.keys() else ""),
-    #)
+    fin_embed.add_field(name="\u200B", value="\u200B")  # newline
+    if ("offline_rank" in fin):
+        if (fin["offline_rank"] >= 1):
+            fin_embed.add_field(
+                name="Rank",
+                value=f"{fin["offline_rank"]}"
+                #+ (f"({fin['rank_delta']})" if "rank_delta" in fin.keys() else ""),
+            )
 
     #if (fin['kacky_rank'] == 1):
     #    offlineTopTwo = get_top_two(fin['mapnr'])
@@ -91,30 +94,22 @@ def determine_embed_title(player: dict, fin: dict):
 
     It checks for wr's, pbs with rank <= 5, hunting ranks achieved, and new finishes
     """
-    # TODO: this will need to be rewritten
-    #edition_count = int(int(CFG[CFG["bot"]["mode"]]["mappack_count"]) // 75)
-    #ranks_numbers = [edition_count * 10, edition_count * 25, edition_count * 50, edition_count * 65, edition_count * 75]
-    #ranks_title = [
-    #    "<:PepegaClown:1301186994717724745> NEW PLASTIC RANK <:PepegaClown:1301186994717724745>",
-    #    "<:Pepeg:1301185040272719985> NEW BRONZE RANK <:Pepeg:1301185040272719985>",
-    #    "<:Pepega:1301185111399731242> NEW SILVER RANK <:Pepega:1301185111399731242>",
-    #    "<:PepegaDriving:1301185137282650113> NEW GOLD RANK <:PepegaDriving:1301185137282650113>",
-    #    "<:Nerdge:1301196656309567558> NEW KACKY RANK <:Nerdge:1301196656309567558>" 
-    #]
+    edition_count = int(int(botils.config.CFG.BOT["hunting"]["mappack_count"]) // 75)
+    ranks_numbers = [edition_count * 10, edition_count * 25, edition_count * 50, edition_count * 65, edition_count * 75]
+    ranks_title = [
+        "<:PepegaClown:1301186994717724745> NEW PLASTIC RANK <:PepegaClown:1301186994717724745>",
+        "<:Pepeg:1301185040272719985> NEW BRONZE RANK <:Pepeg:1301185040272719985>",
+        "<:Pepega:1301185111399731242> NEW SILVER RANK <:Pepega:1301185111399731242>",
+        "<:PepegaDriving:1301185137282650113> NEW GOLD RANK <:PepegaDriving:1301185137282650113>",
+        "<:Nerdge:1301196656309567558> NEW KACKY RANK <:Nerdge:1301196656309567558>" 
+    ]
 
-    #if "score_delta" in fin.keys():
-    #    if fin['kacky_rank'] == 1:
-    #        offlineTopTwo = get_top_two(fin['mapnr'])
-    #        if offlineTopTwo[0] == fin['score']:
-    #            return ":crown: NEW WORLD RECORD :crown:"
-    #        else:
-    #            return ":fire: NEW TOP 5 :fire:"
-    #    else:
-    #        return ":fire: NEW TOP 5 :fire:"
+    if fin["offline_rank"] == 1:
+        return ":crown: NEW WORLD RECORD :crown:"
         
-    #for i in range(len(ranks_numbers)):
-    #    if player["fincount"] == ranks_numbers[i]:
-    #        return ranks_title[i]
+    for i in range(len(ranks_numbers)):
+        if player["fincount"] == ranks_numbers[i]:
+            return ranks_title[i]
         
     return ":checkered_flag: NEW FINISH :checkered_flag:"
 

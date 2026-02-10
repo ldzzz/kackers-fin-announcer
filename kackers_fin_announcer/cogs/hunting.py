@@ -2,7 +2,7 @@ import botils.config
 import botils.shelfer as std
 from botils.fetch import fetch_player_finishes
 from botils.load_config_logger import get_module_logger
-from botils.nadeoAPI import get_top_two
+from botils.nadeoAPI import get_rank
 from botils.utils import build_announce_embed, filter_duplicates, get_latest_finishes
 from discord.ext import commands, tasks
 
@@ -43,20 +43,28 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
             # self-correct if writing to file failed at any point
             if len(cleaned_fins_kr) // 2 > len(data["kr_finishes"]):
                 logger.error(
-                    f"This doesnt look right:\n{player}: old_cnt={len(data['finishes'])}, new_cnt={len(cleaned_fins_kr)} -> Self-correcting"
+                    f"This doesnt look right:\n{player}: old_cnt={len(data['kr_finishes'])}, new_cnt={len(cleaned_fins_kr)} -> Self-correcting"
                 )
                 nfpbkr = []
 
             for fin in nfpbkr:
+                fin["offline_rank"] = get_rank(fin["mapUid"], fin["score"])
+
                 embed_msg = build_announce_embed(
                         {"username": player, "fincount": len(cleaned_fins_kr)}, fin, True
                     )
 
                 # TODO: also will neeed fixing
                 logger.info("Sending Message")
-                await self.bot.get_channel(self.bot.kr_fin_channel.id).send(
-                    embed=embed_msg
-                )
+                if fin["offline_rank"] == 1:
+                    await self.bot.get_channel(self.bot.kr_fin_channel.id).send(
+                        f"<@&{botils.config.CFG.SECRETS["wr_role_id"]}>",
+                        embed=embed_msg
+                    )
+                else:
+                    await self.bot.get_channel(self.bot.kr_fin_channel.id).send(
+                        embed=embed_msg
+                    )
 
             nfpbkx = get_latest_finishes(data["kx_finishes"], cleaned_fins_kx)
             nfpbkx = nfpbkx[:1]
@@ -68,15 +76,24 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
                 nfpbkx = []
 
             for fin in nfpbkx:
+                fin["offline_rank"] = get_rank(fin["mapUid"], fin["score"])
+
                 embed_msg = build_announce_embed(
                         {"username": player, "fincount": len(cleaned_fins_kx)}, fin, False
                     )
 
                 # TODO: also will neeed fixing
                 logger.info("Sending Message")
-                await self.bot.get_channel(self.bot.kx_fin_channel.id).send(
-                    embed=embed_msg
-                )
+
+                if fin["offline_rank"] == 1:
+                    await self.bot.get_channel(self.bot.kx_fin_channel.id).send(
+                        f"<@&{botils.config.CFG.SECRETS["wr_role_id"]}>",
+                        embed=embed_msg
+                    )
+                else:
+                    await self.bot.get_channel(self.bot.kx_fin_channel.id).send(
+                        embed=embed_msg
+                    )
             std.add_or_update_player(player, data["id"], cleaned_fins_kr, cleaned_fins_kx)
 
         logger.info("Done fetching all players")
