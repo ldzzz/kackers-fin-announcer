@@ -34,7 +34,7 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
             # skip if Kacky-API failed at any point
             if not fetched_fins:
                 logger.error(
-                    f"This doesnt look right:\n{player}: old_cnt={len(data['finishes'])}, new_cnt={len(cleaned_fins_kr)} -> Skipping"
+                    f"This doesnt look right:\n{player}: old_cnt={len(data['kr_finishes'])}, new_cnt={len(cleaned_fins_kr)} -> Skipping"
                 )
                 continue
             
