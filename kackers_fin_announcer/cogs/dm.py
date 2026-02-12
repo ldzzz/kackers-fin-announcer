@@ -175,12 +175,19 @@ class KFADm(commands.Cog, name="DMCog"):
         
         data = std.get_all_data()
 
-        generalStats = GeneralStatsContainer(username, data[username])
-        missingStats = MissingContainer(username, data[username])
-        view = SwitchableView(generalStats, missingStats)
-
-        logger.info("VIEWWWWWWw")
-        logger.info(view.to_components())
+        try:
+            generalStats = GeneralStatsContainer(username, data[username])
+        except Exception as e:
+            logger.log(e)
+        
+        try:
+            missingStats = MissingContainer(username, data[username])
+        except Exception as e:
+            logger.log(e)
+        try:
+            view = SwitchableView(generalStats, missingStats)
+        except Exception as e:
+            logger.log(e)
 
         try:
             await interaction.followup.send(
@@ -280,13 +287,20 @@ class KFADm(commands.Cog, name="DMCog"):
         )
 
     @cfg_group.command(name="hunting")
-    async def config_bot(self, interaction: discord.Interaction, interval: int=botils.config.CFG.BOT["hunting"]["interval"], mappack_count: int=botils.config.CFG.BOT["hunting"]["mappack_count"], pb_limit: int=botils.config.CFG.BOT["hunting"]["pb_limit"], api: str=botils.config.CFG.BOT["hunting"]["api"]) -> None:
+    async def config_bot(self, 
+                         interaction: discord.Interaction, 
+                         interval: int=botils.config.CFG.BOT["hunting"]["interval"], 
+                         kr_mappack_count: int=botils.config.CFG.BOT["hunting"]["kr_mappack_count"], 
+                         kx_mappack_count: int=botils.config.CFG.BOT["hunting"]["kx_mappack_count"], 
+                         pb_limit: int=botils.config.CFG.BOT["hunting"]["pb_limit"], 
+                         api: str=botils.config.CFG.BOT["hunting"]["api"]) -> None:
         """Set hunting configuration
         
         Args:
             api (str): Where to fetch finishes from
             interval (int): How often to refresh finish data of players
-            mappack_count (int): Current mappack size
+            kr_mappack_count (int): Current kacky reloaded mappack size
+            kx_mappack_count (int): Current kacky remixed mappack size
             pb_limit (int): Limit for announcing PB finishes
         """
         await interaction.response.defer(thinking=True)
@@ -295,13 +309,24 @@ class KFADm(commands.Cog, name="DMCog"):
             logger.info("Realoding hunting cog")
             await self.bot.unload_extension("cogs.hunting")
             await self.bot.load_extension("cogs.hunting")
-        std.update_hunting_config({"api":api, "interval":interval, "mappack_count":mappack_count, "pb_limit":pb_limit})
+        std.update_hunting_config({"api":api,
+                                    "interval":interval, 
+                                    "kr_mappack_count": kr_mappack_count, 
+                                    "kx_mappack_count": kx_mappack_count, 
+                                    "pb_limit":pb_limit})
         await interaction.followup.send(
             embed=_create_embed(title=f"Hunting configuration", data=botils.config.CFG.BOT["hunting"])
         )
 
     @cfg_group.command(name="event")
-    async def config_bot(self, interaction: discord.Interaction, battle_interval: int=botils.config.CFG.BOT["event"]["battle_interval"], interval: int=botils.config.CFG.BOT["event"]["interval"], mappack_count: int=botils.config.CFG.BOT["event"]["mappack_count"], pb_limit: int=botils.config.CFG.BOT["event"]["pb_limit"], api: str=botils.config.CFG.BOT["event"]["api"], teams:  discord.Attachment=None, edition: int=botils.config.CFG.BOT["event"]["edition"]) -> None:
+    async def config_bot(self, 
+                         interaction: discord.Interaction, 
+                         battle_interval: int=botils.config.CFG.BOT["event"]["battle_interval"], 
+                         interval: int=botils.config.CFG.BOT["event"]["interval"], 
+                         mappack_count: int=botils.config.CFG.BOT["event"]["mappack_count"], 
+                         pb_limit: int=botils.config.CFG.BOT["event"]["pb_limit"], 
+                         api: str=botils.config.CFG.BOT["event"]["api"], 
+                         teams:  discord.Attachment=None, edition: int=botils.config.CFG.BOT["event"]["edition"]) -> None:
         """Set hunting configuration
         
         Args:

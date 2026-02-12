@@ -12,7 +12,8 @@
         "rank_call": "https://live-services.trackmania.nadeo.live/api/token/leaderboard/group/map",
         "interval": 1,
         "pb_limit": 5,
-        "mappack_count": 450
+        "kr_mappack_count": 450,
+        "kx_mappack_count": 201
     },
     "event": {
         "api": "api_call",

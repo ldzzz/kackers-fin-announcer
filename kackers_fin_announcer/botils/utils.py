@@ -94,7 +94,7 @@ def determine_embed_title(player: dict, fin: dict):
 
     It checks for wr's, pbs with rank <= 5, hunting ranks achieved, and new finishes
     """
-    edition_count = int(int(botils.config.CFG.BOT["hunting"]["mappack_count"]) // 75)
+    edition_count = int(int(botils.config.CFG.BOT["hunting"]["kr_mappack_count"]) // 75)
     ranks_numbers = [edition_count * 10, edition_count * 25, edition_count * 50, edition_count * 65, edition_count * 75]
     ranks_title = [
         "<:PepegaClown:1301186994717724745> NEW PLASTIC RANK <:PepegaClown:1301186994717724745>",
