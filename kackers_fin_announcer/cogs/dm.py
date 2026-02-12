@@ -168,8 +168,8 @@ class KFADm(commands.Cog, name="DMCog"):
         """Get general player stats"""
         await interaction.response.defer(thinking=True)
         if username not in std.get_all_players():
-            await interaction.followup.send_message(
-                embed=_create_embed(title=f"Player does not exist")
+            await interaction.followup.send(
+                embed=_create_embed(title=f"Player \"{username}\" does not exist")
             )
             return
         
