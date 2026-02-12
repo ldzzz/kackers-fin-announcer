@@ -71,7 +71,7 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
             # self-correct if writing to file failed at any point
             if len(cleaned_fins_kx) // 2 > len(data["kx_finishes"]):
                 logger.error(
-                    f"This doesnt look right:\n{player}: old_cnt={len(data['finishes'])}, new_cnt={len(cleaned_fins_kx)} -> Self-correcting"
+                    f"This doesnt look right:\n{player}: old_cnt={len(data['kx_finishes'])}, new_cnt={len(cleaned_fins_kx)} -> Self-correcting"
                 )
                 nfpbkx = []
 
