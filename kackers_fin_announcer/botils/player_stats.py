@@ -48,13 +48,16 @@ class MissingContainer(ui.Container):
             self.remove_item(self.missingText)
 
         missingEntries = self.get_missing_entries()
-
         string = ""
-        for i in missingEntries:
-            if self.edition == 0:
-                string += "Kacky Reloaded #" + str(i) + "\n"
-            else: 
-                string += "Kacky Remixed #" + str(i) + "\n"
+
+        if len(missingEntries) > 0:
+            for i in missingEntries:
+                if self.edition == 0:
+                    string += "Kacky Reloaded #" + str(i) + "\n"
+                else: 
+                    string += "Kacky Remixed #" + str(i) + "\n"
+        else:
+            string = "No maps missing :coolCat:"
 
         self.missingText = ui.TextDisplay(string, id=101)
         self.add_item(self.missingText)
