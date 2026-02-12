@@ -6,6 +6,7 @@ from botils.load_config_logger import get_module_logger
 from botils.utils import _create_embed, filter_duplicates, parse_teams
 from discord import app_commands
 from discord.ext import commands
+from botils.player_stats import SwitchableView, GeneralStatsContainer, MissingContainer
 
 logger = get_module_logger(__name__)
 
@@ -167,20 +168,27 @@ class KFADm(commands.Cog, name="DMCog"):
         """Get general player stats"""
         await interaction.response.defer(thinking=True)
         if username not in std.get_all_players():
-            await interaction.followup.send(
-                embed=_create_embed(title=f"Player does not exist added")
+            await interaction.followup.send_message(
+                embed=_create_embed(title=f"Player does not exist")
             )
             return
         
         data = std.get_all_data()
-        logger.info(data[username])
 
-        await interaction.followup.send(
-            embed=_create_embed(
-                title=f"Registered players ({len(list(data.keys()))})",
-                data={"Name": username, "Finish count": data[username]['finishes'], "ID": data[username]['id']},
+        generalStats = GeneralStatsContainer(username, data[username])
+        missingStats = MissingContainer(username, data[username])
+        view = SwitchableView(generalStats, missingStats)
+
+        logger.info("VIEWWWWWWw")
+        logger.info(view.to_components())
+
+        try:
+            await interaction.followup.send(
+                view=view
             )
-        )
+        except Exception as e:
+            logger.error("Failed to send view")
+            logger.error(e)
 
     @helmboard_group.command(name="kr")
     async def helm_leaderboard(self, interaction: discord.Interaction) -> None:

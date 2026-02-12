@@ -2,6 +2,7 @@ import asyncio
 
 import botils.config
 import discord
+import traceback
 from botils.load_config_logger import get_module_logger
 from botils.shelfer import (
     get_config,
@@ -48,6 +49,30 @@ async def main():
         intents=discord.Intents(messages=True, guilds=True, message_content=True),
         command_prefix="/",
     )
+
+    # Global error logging for prefix commands (if you use any)
+    @kfa.event
+    async def on_error(event_method, *args, **kwargs):
+        traceback.print_exc()
+
+    @kfa.event
+    async def on_command_error(ctx, error):
+        traceback.print_exc()
+
+    # Slash/app command errors
+    from discord import app_commands, Interaction
+
+    @kfa.tree.error
+    async def on_app_command_error(interaction: Interaction, error: app_commands.AppCommandError):
+        traceback.print_exc()
+        try:
+            if interaction.response.is_done():
+                await interaction.followup.send(f"Error: {error}", ephemeral=True)
+            else:
+                await interaction.response.send_message(f"Error: {error}", ephemeral=True)
+        except Exception:
+            pass
+
     async with kfa:
         await load_extensions(kfa)
         logger.info(f"Loaded extensions")
