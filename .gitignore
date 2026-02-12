@@ -198,3 +198,4 @@ poetry.toml
 data/*
 secrets.json
 default_config.json
+environment.env

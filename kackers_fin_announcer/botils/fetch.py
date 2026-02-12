@@ -29,4 +29,4 @@ def fetch_player_finishes(player: str, pid: int) -> list:
     except Exception as e:
         logger.error("Kacky API not reachable or json not serializable?")
         logger.error(e)
-        return {}
+        return [{}, {}]
