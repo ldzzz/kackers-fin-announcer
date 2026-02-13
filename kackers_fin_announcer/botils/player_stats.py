@@ -100,7 +100,7 @@ class MissingContainer(ui.Container):
 # Main view that switches between containers  
 class SwitchableView(ui.LayoutView):  
     def __init__(self, generalStats: GeneralStatsContainer, missing: MissingContainer):  
-        super().__init__()  
+        super().__init__(timeout=86400)  
         self.generalStats = generalStats
         self.missing = missing
         self.current = self.generalStats  
