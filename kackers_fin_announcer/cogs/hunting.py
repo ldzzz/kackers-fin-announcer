@@ -1,5 +1,6 @@
 import botils.config
 import botils.shelfer as std
+import discord
 from botils.fetch import fetch_player_finishes
 from botils.load_config_logger import get_module_logger
 from botils.nadeoAPI import get_rank
@@ -26,6 +27,7 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
     @tasks.loop(minutes=botils.config.CFG.BOT["hunting"]["interval"])
     async def fetch_finishes(self):
         logger.info("Started fetching all players")
+        await self.bot.change_presence(activity=discord.Game(name='Fetching finishes'))
         players = std.get_all_data()
         for player, data in players.items():
             fetched_fins = fetch_player_finishes(player, data["id"])
@@ -97,6 +99,7 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
             std.add_or_update_player(player, data["id"], cleaned_fins_kr, cleaned_fins_kx)
 
         logger.info("Done fetching all players")
+        await self.bot.change_presence(activity=discord.Game(name='🎮Finishing kacky maps'))
 
     @fetch_finishes.before_loop
     async def fetcher_before_loop(self):
