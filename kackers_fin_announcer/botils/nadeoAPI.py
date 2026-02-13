@@ -1,7 +1,9 @@
 import ast
-
 import requests
 import botils.config
+import datetime
+import jwt
+
 from botils.load_config_logger import get_module_logger
 from requests.auth import HTTPBasicAuth
 
@@ -10,19 +12,40 @@ logger = get_module_logger(__name__)
 def get_KR_map_Ids():
     logger.info("Parsing kr map Ids")
 
-    file = open(botils.config.CFG.SECRETS['kr_map_ids'])
+    file = open(botils.config.CFG.SECRETS["kr_map_ids"])
     krMapUIDs = file.readline().split("\\n")
 
     return krMapUIDs
 
-
 krMapUids = get_KR_map_Ids()
+
+def validate_token(token):
+    try:
+        decoded_payload = jwt.decode(token, options={"verify_signature": False})
+        
+        exp_timestamp = decoded_payload.get('exp')
+        
+        if exp_timestamp:
+            # Convert timestamp to a readable UTC datetime
+            expire_date = datetime.datetime.fromtimestamp(exp_timestamp, tz=datetime.timezone.utc)
+            buffer_time = datetime.timedelta(minutes=1)
+
+            expire_date -= buffer_time
+
+            current_date = datetime.datetime.now(tz=datetime.timezone.utc)
+            
+            return current_date <= expire_date
+
+        else:
+            print("The token does not contain an 'exp' field.")
+            return False
+
+    except jwt.DecodeError:
+        print("Error: Invalid token format.")
+        return False
 
 def isReloaded(uid):
     return uid in krMapUids
-
-def get_top_two(mapNr):
-    pass
 
 def get_rank(map_uid, score):
     live_token = get_Live_API_token()
@@ -75,9 +98,35 @@ def get_ticket():
 
     return x.text.split('"')[7]
 
-live_token = None
+access_live_token = None
+refresh_live_token = None
+
+def refresh_live_API_token():
+    global access_live_token
+    global refresh_live_token
+
+    url = "https://prod.trackmania.core.nadeo.online/v2/authentication/token/refresh"
+
+    headers = {"Content-Type": "application/json", "Authorization": "nadeo_v1 t=" + refresh_live_token, "User-Agent":"ThijsvanB"}
+    
+    x = requests.post(url, headers = headers)
+
+    access_live_token = x.text.split('"')[3]
+    refresh_live_token = x.text.split('"')[7]
 
 def get_Live_API_token():
+    global access_live_token
+    global refresh_live_token
+
+    #check if token is still valid
+    if validate_token(access_live_token):
+        return access_live_token
+    
+    #check if refresh token is still valid
+    if validate_token(refresh_live_token):
+        return access_live_token
+
+    #do the big refresh
     ticket = get_ticket()
 
     url = "https://prod.trackmania.core.nadeo.online/v2/authentication/token/ubiservices"
@@ -87,13 +136,10 @@ def get_Live_API_token():
 
     x = requests.post(url, headers = headers, json=body)
 
-    print("Request live token: ", x)
-
     if(x.status_code != 200):
         return -1
     
-    live_token = x.text.split('"')[3]
+    access_live_token = x.text.split('"')[3]
+    refresh_live_token = x.text.split('"')[7]
 
-    print(live_token)
-
-    return live_token
+    return access_live_token

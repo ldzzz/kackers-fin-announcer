@@ -3,7 +3,6 @@ import botils.shelfer as std
 import discord
 from botils.fetch import fetch_player_finishes
 from botils.load_config_logger import get_module_logger
-from botils.nadeoAPI import get_top_two
 from botils.utils import (
     _create_embed,
     build_announce_embed,

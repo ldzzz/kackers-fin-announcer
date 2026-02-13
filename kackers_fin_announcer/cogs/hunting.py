@@ -9,7 +9,6 @@ from discord.ext import commands, tasks
 
 logger = get_module_logger(__name__)
 
-
 class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
     def __init__(self, bot):
         self.bot = bot
@@ -19,10 +18,6 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
         if not self.fetch_finishes.is_running():
             logger.info("starting fetch finishes")
             self.fetch_finishes.start()
-
-        #if self.fetch_finishes.is_running():
-        #    logger.info("Canceling fetch finishes")
-        #    self.fetch_finishes.cancel()
 
     @tasks.loop(minutes=botils.config.CFG.BOT["hunting"]["interval"])
     async def fetch_finishes(self):
@@ -56,7 +51,6 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
                         {"username": player, "fincount": len(cleaned_fins_kr)}, fin, True
                     )
 
-                # TODO: also will neeed fixing
                 logger.info("Sending Message")
                 if fin["offline_rank"] == 1:
                     await self.bot.get_channel(self.bot.kr_fin_channel.id).send(
@@ -84,9 +78,7 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
                         {"username": player, "fincount": len(cleaned_fins_kx)}, fin, False
                     )
 
-                # TODO: also will neeed fixing
                 logger.info("Sending Message")
-
                 if fin["offline_rank"] == 1:
                     await self.bot.get_channel(self.bot.kx_fin_channel.id).send(
                         f"<@&{botils.config.CFG.SECRETS["wr_role_id"]}>",

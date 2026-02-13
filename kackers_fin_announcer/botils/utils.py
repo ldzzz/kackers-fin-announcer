@@ -4,7 +4,6 @@ from datetime import datetime
 import botils.config
 import discord
 from botils.load_config_logger import get_module_logger
-from botils.nadeoAPI import get_top_two
 
 logger = get_module_logger(__name__)
 
