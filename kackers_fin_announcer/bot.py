@@ -32,8 +32,8 @@ class KackersFinAnnouncer(commands.Bot):
 
     async def on_ready(self):
         if not self.synced:
-            await self.tree.sync()
-            logger.info("Synced bot commands")
+            sync = await self.tree.sync()
+            logger.info(sync)
             self.synced = True
 
 

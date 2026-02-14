@@ -7,6 +7,7 @@ from botils.utils import _create_embed, filter_duplicates, parse_teams
 from discord import app_commands
 from discord.ext import commands
 from botils.player_stats import SwitchableView, GeneralStatsContainer, MissingContainer
+from botils.nadeoAPI import get_wr
 
 logger = get_module_logger(__name__)
 
@@ -162,6 +163,34 @@ class KFADm(commands.Cog, name="DMCog"):
                 data={"Name": names, "Finish count": fins, "ID": ids},
             )
         )
+
+    @app_commands.command(name="wr_stats")
+    async def wr_stats(self, interaction: discord.Interaction, map_number: int) -> None:
+        """Get wr stats"""
+        await interaction.response.defer(thinking=True)
+
+        try:
+            data = get_wr(map_number - 1)
+
+            wr_embed = discord.Embed(title=f"World record on Kacky reloaded #{map_number}")
+            wr_embed.add_field(name="#1", value=f"{data[0][0]} - {data[1][0]}")
+            wr_embed.add_field(name="\u200B", value="\u200B")  # newline
+            wr_embed.add_field(name="\u200B", value="\u200B")  # newline
+            wr_embed.add_field(name="#2", value=f"{data[0][1]} - {data[1][1]}")
+
+            logger.info(data)
+            await interaction.followup.send(
+                    embed=wr_embed
+                )
+            return
+
+        except Exception as e:
+            logger.info(e)
+            await interaction.followup.send(
+                    embed=_create_embed(title=f"Could not find wrs")
+                )
+            return
+
 
     @app_commands.command(name="player_stats")
     async def stats(self, interaction: discord.Interaction, username: str) -> None:

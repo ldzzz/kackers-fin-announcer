@@ -3,6 +3,7 @@ import requests
 import botils.config
 import datetime
 import jwt
+import time
 
 from botils.load_config_logger import get_module_logger
 from requests.auth import HTTPBasicAuth
@@ -47,6 +48,42 @@ def validate_token(token):
 def isReloaded(uid):
     return uid in krMapUids
 
+def getKrMapUIDFromNumber(nr: int):
+    if nr < 0 or nr > botils.config.CFG.BOT["hunting"]["kr_mappack_count"]:
+        logger.error(f"{nr} is not in current mappack")
+        return ""
+
+    if krMapUids:
+        return krMapUids[nr]
+    else:
+        logger.error("Could not find kr map UIDS")
+        return ""
+
+def get_wr(mapNr):
+    liveToken = get_Live_API_token()  
+
+    getRecordsUrl = "https://live-services.trackmania.nadeo.live/api/token/leaderboard/group/Personal_Best/map/{mapUid}/top?length=2&onlyWorld=true&offset=0"
+
+    mapUid = getKrMapUIDFromNumber(mapNr)
+    if mapUid == "":
+        return #error has already been displayed in get uid function
+    
+    urlReq = getRecordsUrl.replace("{mapUid}", mapUid)
+    time.sleep(1) #Preventing rate limiting
+
+    x = requests.get(urlReq, headers={"Authorization": "nadeo_v1 t=" + liveToken})
+    time.sleep(1) #Preventing rate limiting
+
+    findata = ast.literal_eval(x.text)["tops"][0]["top"]
+
+    userIds = [findata[0]["accountId"], findata[1]["accountId"]]
+    scores = [findata[0]["score"], findata[1]["score"]]
+
+    display_names = get_display_name(userIds)
+    usernames = [display_names[userIds[0]], display_names[userIds[1]]]
+
+    return [usernames, scores]
+
 def get_rank(map_uid, score):
     live_token = get_Live_API_token()
 
@@ -70,6 +107,8 @@ def get_rank(map_uid, score):
     }
 
     x = requests.post(url, headers=headers, params=params, json=payload)
+    time.sleep(1) #Preventing rate limiting
+
     findata = ast.literal_eval(x.text)
     if (x.status_code != 200 or findata == {}):
         print("Error getting rank")
@@ -81,6 +120,31 @@ def get_rank(map_uid, score):
 
     return rank
 
+def get_display_name(accountIds):
+    url = "https://api.trackmania.com/api/display-names?ACCOUNTS"
+
+    oauth_token_ = get_oauth_token()
+
+    urlParams = ""
+    for i in range(0, len(accountIds)):
+        accountId = accountIds[i]
+
+        if i != 0:
+            urlParams += "&"
+        urlParams += "accountId[]=" + accountId
+
+    url = url.replace("ACCOUNTS", urlParams)
+
+    logger.info(url)
+
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {oauth_token_}"}
+    
+    x = requests.get(url, headers = headers)
+    time.sleep(1) #preventing rate limiting
+
+    return ast.literal_eval(x.text)
+
+
 ticket = None
 
 def get_ticket():
@@ -90,8 +154,7 @@ def get_ticket():
     headers = {"Content-Type": "application/json", "Ubi-AppId":botils.config.CFG.SECRETS["ubi_app_id"], "User-Agent":"ThijsvanB"}
 
     x = requests.post(url, headers=headers, auth=basic)
-
-    print("Request ticket: ", x)
+    time.sleep(1) #Preventing rate limiting
 
     if(x.status_code != 200):
         return -1
@@ -100,6 +163,7 @@ def get_ticket():
 
 access_live_token = None
 refresh_live_token = None
+oauth_token = None
 
 def refresh_live_API_token():
     global access_live_token
@@ -110,9 +174,37 @@ def refresh_live_API_token():
     headers = {"Content-Type": "application/json", "Authorization": "nadeo_v1 t=" + refresh_live_token, "User-Agent":"ThijsvanB"}
     
     x = requests.post(url, headers = headers)
+    time.sleep(1) #Preventing rate limiting
 
     access_live_token = x.text.split('"')[3]
     refresh_live_token = x.text.split('"')[7]
+
+def get_oauth_token():
+    global oauth_token
+
+    if (oauth_token != None and oauth_token["expires"] >= datetime.datetime.now()):
+        return oauth_token["access_token"]
+
+    url = "https://api.trackmania.com/api/access_token"
+
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+    body = {
+        "grant_type": "client_credentials",
+        "client_id": botils.config.CFG.SECRETS["oauth_identifier"],
+        "client_secret": botils.config.CFG.SECRETS["oauth_secret"],
+    }
+    
+    x = requests.post(url, headers = headers, data=body)
+    time.sleep(1) #Preventing rate limiting
+
+    token = ast.literal_eval(x.text)
+    expires_in = token["expires_in"] - 10 #subtract 10 for buffer
+    token["expires"] = datetime.datetime.now() + datetime.timedelta(seconds=expires_in)
+
+    oauth_token = token
+
+    return oauth_token["access_token"]
 
 def get_Live_API_token():
     global access_live_token
@@ -135,6 +227,7 @@ def get_Live_API_token():
     body = {"audience": "NadeoLiveServices"}
 
     x = requests.post(url, headers = headers, json=body)
+    time.sleep(1) #Preventing rate limiting
 
     if(x.status_code != 200):
         return -1
