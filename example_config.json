@@ -7,9 +7,25 @@
         "thumbnails_kx": "https://download.dashmap.live/610b1d74-7c0a-41b3-85c4-6dcabedd81b8/KX3.png",
         "mode": "hunting"
     },
+        "nadeo_api": {
+        "rank_call": "",
+        "wr_call": "",
+        "display_name_call": "",
+        "ticket_call": "",
+        "refresh_live_token_call": "",
+        "oauth_token_call": "",
+        "access_live_token_call": ""
+    },
+    "discord_emotes": {
+        "plastic": "",
+        "bronze": "",
+        "silver": "",
+        "gold": "",
+        "kacky": "",
+        "helm":""
+    },
     "hunting": {
         "api": "api_call",
-        "rank_call": "https://live-services.trackmania.nadeo.live/api/token/leaderboard/group/map",
         "interval": 1,
         "pb_limit": 5,
         "kr_mappack_count": 450,
@@ -17,7 +33,6 @@
     },
     "event": {
         "api": "api_call",
-        "rank_call": "https://live-services.trackmania.nadeo.live/api/token/leaderboard/group/map",
         "interval": 1,
         "battle_interval": 60,
         "pb_limit": 5,

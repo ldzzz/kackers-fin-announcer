@@ -172,7 +172,7 @@ class KFADm(commands.Cog, name="DMCog"):
         try:
             data = get_wr(map_number - 1)
 
-            helmEmote = "<:yeah:1446067817756622889>"
+            helmEmote = botils.config.CFG.BOT["discord_emotes"]["helm"]
 
             players = std.get_all_players()
             if data[0][0] in players:

@@ -62,7 +62,7 @@ def getKrMapUIDFromNumber(nr: int):
 def get_wr(mapNr):
     liveToken = get_Live_API_token()  
 
-    getRecordsUrl = "https://live-services.trackmania.nadeo.live/api/token/leaderboard/group/Personal_Best/map/{mapUid}/top?length=2&onlyWorld=true&offset=0"
+    getRecordsUrl = botils.config.CFG.BOT["nadeo_api"]["wr_call"]
 
     mapUid = getKrMapUIDFromNumber(mapNr)
     if mapUid == "":
@@ -87,7 +87,7 @@ def get_wr(mapNr):
 def get_rank(map_uid, score):
     live_token = get_Live_API_token()
 
-    url = "https://live-services.trackmania.nadeo.live/api/token/leaderboard/group/map"
+    url = botils.config.CFG.BOT["nadeo_api"]["rank_call"]
 
     params = {
         f"scores[{map_uid}]": score
@@ -121,7 +121,7 @@ def get_rank(map_uid, score):
     return rank
 
 def get_display_name(accountIds):
-    url = "https://api.trackmania.com/api/display-names?ACCOUNTS"
+    url = botils.config.CFG.BOT["nadeo_api"]["display_name_call"]
 
     oauth_token_ = get_oauth_token()
 
@@ -150,8 +150,8 @@ ticket = None
 def get_ticket():
     basic = HTTPBasicAuth(botils.config.CFG.SECRETS["nadeo_username"], botils.config.CFG.SECRETS["nadeo_password"])
 
-    url = "https://public-ubiservices.ubi.com/v3/profiles/sessions"
-    headers = {"Content-Type": "application/json", "Ubi-AppId":botils.config.CFG.SECRETS["ubi_app_id"], "User-Agent":"ThijsvanB"}
+    url = url = botils.config.CFG.BOT["nadeo_api"]["ticket_call"]
+    headers = {"Content-Type": "application/json", "Ubi-AppId":botils.config.CFG.SECRETS["ubi_app_id"], "User-Agent":botils.config.CFG.SECRETS["user-agent"]}
 
     x = requests.post(url, headers=headers, auth=basic)
     time.sleep(1) #Preventing rate limiting
@@ -169,9 +169,9 @@ def refresh_live_API_token():
     global access_live_token
     global refresh_live_token
 
-    url = "https://prod.trackmania.core.nadeo.online/v2/authentication/token/refresh"
+    url = botils.config.CFG.BOT["nadeo_api"]["refresh_live_token_call"]
 
-    headers = {"Content-Type": "application/json", "Authorization": "nadeo_v1 t=" + refresh_live_token, "User-Agent":"ThijsvanB"}
+    headers = {"Content-Type": "application/json", "Authorization": "nadeo_v1 t=" + refresh_live_token, "User-Agent":botils.config.CFG.SECRETS["user-agent"]}
     
     x = requests.post(url, headers = headers)
     time.sleep(1) #Preventing rate limiting
@@ -185,7 +185,7 @@ def get_oauth_token():
     if (oauth_token != None and oauth_token["expires"] >= datetime.datetime.now()):
         return oauth_token["access_token"]
 
-    url = "https://api.trackmania.com/api/access_token"
+    url = botils.config.CFG.BOT["nadeo_api"]["oauth_token_call"]
 
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
@@ -221,9 +221,9 @@ def get_Live_API_token():
     #do the big refresh
     ticket = get_ticket()
 
-    url = "https://prod.trackmania.core.nadeo.online/v2/authentication/token/ubiservices"
+    url = botils.config.CFG.BOT["nadeo_api"]["access_live_token_call"]
 
-    headers = {"Content-Type": "application/json", "Authorization": "ubi_v1 t=" + ticket, "User-Agent":"ThijsvanB"}
+    headers = {"Content-Type": "application/json", "Authorization": "ubi_v1 t=" + ticket, "User-Agent":botils.config.CFG.SECRETS["user-agent"]}
     body = {"audience": "NadeoLiveServices"}
 
     x = requests.post(url, headers = headers, json=body)

@@ -94,13 +94,13 @@ def determine_embed_title(player: dict, fin: dict):
     It checks for wr's, pbs with rank <= 5, hunting ranks achieved, and new finishes
     """
     edition_count = int(int(botils.config.CFG.BOT["hunting"]["kr_mappack_count"]) // 75)
-    ranks_numbers = [edition_count * 10, edition_count * 25, edition_count * 50, edition_count * 65, edition_count * 75]
+    ranks_numbers = [edition_count * 10, edition_count * 25, edition_count * 40, edition_count * 50, edition_count * 75]
     ranks_title = [
-        "<:PepegaClown:1301186994717724745> NEW PLASTIC RANK <:PepegaClown:1301186994717724745>",
-        "<:Pepeg:1301185040272719985> NEW BRONZE RANK <:Pepeg:1301185040272719985>",
-        "<:Pepega:1301185111399731242> NEW SILVER RANK <:Pepega:1301185111399731242>",
-        "<:PepegaDriving:1301185137282650113> NEW GOLD RANK <:PepegaDriving:1301185137282650113>",
-        "<:Nerdge:1301196656309567558> NEW KACKY RANK <:Nerdge:1301196656309567558>" 
+        botils.config.CFG.BOT["discord_emotes"]["plastic"] + "NEW PLASTIC RANK" + botils.config.CFG.BOT["discord_emotes"]["plastic"],
+        botils.config.CFG.BOT["discord_emotes"]["bronze"] + "NEW BRONZE RANK" + botils.config.CFG.BOT["discord_emotes"]["bronze"],
+        botils.config.CFG.BOT["discord_emotes"]["silver"] + "NEW SILVER RANK" + botils.config.CFG.BOT["discord_emotes"]["silver"],
+        botils.config.CFG.BOT["discord_emotes"]["gold"] + "NEW GOLD RANK" + botils.config.CFG.BOT["discord_emotes"]["gold"],
+        botils.config.CFG.BOT["discord_emotes"]["kacky"] + "NEW KACKY RANK" + botils.config.CFG.BOT["discord_emotes"]["kacky"]
     ]
 
     if fin["offline_rank"] == 1:
