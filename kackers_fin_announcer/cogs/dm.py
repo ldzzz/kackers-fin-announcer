@@ -172,11 +172,21 @@ class KFADm(commands.Cog, name="DMCog"):
         try:
             data = get_wr(map_number - 1)
 
+            helmEmote = "<:yeah:1446067817756622889>"
+
+            players = std.get_all_players()
+            if data[0][0] in players:
+                data[0][0] = helmEmote + data[0][0]
+            if data[0][1] in players:
+                data[0][1] = helmEmote + data[0][1]
+
             wr_embed = discord.Embed(title=f"World record on Kacky reloaded #{map_number}")
-            wr_embed.add_field(name="#1", value=f"{data[0][0]} - {data[1][0]}")
-            wr_embed.add_field(name="\u200B", value="\u200B")  # newline
-            wr_embed.add_field(name="\u200B", value="\u200B")  # newline
-            wr_embed.add_field(name="#2", value=f"{data[0][1]} - {data[1][1]}")
+            wr_embed.add_field(name="#1", value=f"{data[0][0]}")
+            wr_embed.add_field(name="Time", value=f"{data[1][0]}")  # newline
+            wr_embed.add_field(name="\u200B", value="\u200B")       # newline
+            wr_embed.add_field(name="#2", value=f"{data[0][1]}")
+            wr_embed.add_field(name="Time", value=f"{data[1][1]}")  # newline
+            wr_embed.add_field(name="\u200B", value="\u200B")       # newline
 
             logger.info(data)
             await interaction.followup.send(
