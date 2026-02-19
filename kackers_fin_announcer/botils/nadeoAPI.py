@@ -150,7 +150,7 @@ ticket = None
 def get_ticket():
     basic = HTTPBasicAuth(botils.config.CFG.SECRETS["nadeo_username"], botils.config.CFG.SECRETS["nadeo_password"])
 
-    url = url = botils.config.CFG.BOT["nadeo_api"]["ticket_call"]
+    url = botils.config.CFG.BOT["nadeo_api"]["ticket_call"]
     headers = {"Content-Type": "application/json", "Ubi-AppId":botils.config.CFG.SECRETS["ubi_app_id"], "User-Agent":botils.config.CFG.SECRETS["user-agent"]}
 
     x = requests.post(url, headers=headers, auth=basic)
