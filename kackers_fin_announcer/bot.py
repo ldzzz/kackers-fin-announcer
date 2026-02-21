@@ -17,14 +17,15 @@ logger = get_module_logger(__name__)
 class KackersFinAnnouncer(commands.Bot):
     logger.info("Starting bot init")
     logger.info("Checking if there is pre-saved config")
-    saved_cfg = get_config()
-    logger.info(f"Saved config: {saved_cfg}")
-    if saved_cfg:
-        botils.config.CFG.BOT = saved_cfg
-    else:
-        update_bot_config(botils.config.CFG.BOT["bot"])
-        update_hunting_config(botils.config.CFG.BOT["hunting"])
-        update_event_config(botils.config.CFG.BOT["event"])
+    #saved_cfg = get_config()
+    #logger.info(f"Saved config: {saved_cfg}")
+    #if saved_cfg:
+    #    botils.config.CFG.BOT = saved_cfg
+    #else:
+    update_bot_config(botils.config.CFG.BOT["bot"])
+    update_hunting_config(botils.config.CFG.BOT["hunting"])
+    update_event_config(botils.config.CFG.BOT["event"])
+    
     kr_fin_channel = discord.Object(id=botils.config.CFG.BOT["bot"]["finannouncement_channel_kr"])
     kx_fin_channel = discord.Object(id=botils.config.CFG.BOT["bot"]["finannouncement_channel_kx"])
     server = discord.Object(id=botils.config.CFG.SECRETS["server_id"])

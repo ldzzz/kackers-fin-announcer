@@ -7,7 +7,7 @@
         "thumbnails_kx": "https://download.dashmap.live/610b1d74-7c0a-41b3-85c4-6dcabedd81b8/KX3.png",
         "mode": "hunting"
     },
-        "nadeo_api": {
+    "nadeo_api": {
         "rank_call": "",
         "wr_call": "",
         "display_name_call": "",
