@@ -109,7 +109,7 @@ def get_rank(map_uid, score):
     x = requests.post(url, headers=headers, params=params, json=payload)
     time.sleep(1) #Preventing rate limiting
 
-    if (x.status_code != 200 or findata == {}):
+    if (x.status_code != 200 or len(x.text) == 0):
         print("Error getting rank")
         return -1
 
