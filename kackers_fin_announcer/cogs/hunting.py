@@ -5,6 +5,7 @@ from botils.fetch import fetch_player_finishes
 from botils.load_config_logger import get_module_logger
 from botils.nadeoAPI import get_rank
 from botils.utils import build_announce_embed, filter_duplicates, get_latest_finishes
+from botils.aprilFools import sendMessage
 from discord.ext import commands, tasks
 
 logger = get_module_logger(__name__)
@@ -18,6 +19,16 @@ class KFAFin(commands.Cog, name="FinishAnnouncerCog"):
         if not self.fetch_finishes.is_running():
             logger.info("starting fetch finishes")
             self.fetch_finishes.start()
+
+        self.print_april_fools_msg.start()
+
+    @tasks.loop(seconds=10)
+    async def print_april_fools_msg(self):
+        logger.info(f"Starting april fools loop in channel {self.bot.kr_fin_channel.id}")
+        print(self.bot)
+        channel = await self.bot.fetch_channel(self.bot.kr_fin_channel.id)
+        print(channel)
+        await sendMessage(channel)
 
     @tasks.loop(minutes=botils.config.CFG.BOT["hunting"]["interval"])
     async def fetch_finishes(self):

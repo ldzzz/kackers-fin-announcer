@@ -28,6 +28,7 @@ class KackersFinAnnouncer(commands.Bot):
     
     kr_fin_channel = discord.Object(id=botils.config.CFG.BOT["bot"]["finannouncement_channel_kr"])
     kx_fin_channel = discord.Object(id=botils.config.CFG.BOT["bot"]["finannouncement_channel_kx"])
+    aprilFoolsChannel = discord.Object(id=1469374356499988627)
     server = discord.Object(id=botils.config.CFG.SECRETS["server_id"])
     synced = False
 
