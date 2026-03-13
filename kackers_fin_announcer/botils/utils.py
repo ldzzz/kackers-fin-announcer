@@ -35,7 +35,7 @@ def build_announce_embed(player: dict, fin: dict, isKr: bool) -> discord.Embed:
     if isKr:
         thumbnail_url = botils.config.CFG.BOT["bot"]["thumbnails_kr"].replace("MAPNR", str(fin["number"]))
     else: 
-        thumbnail_url = botils.config.CFG.BOT["bot"]["thumbnails_kx"]
+        thumbnail_url = botils.config.CFG.BOT["bot"]["thumbnails_kx"].replace("MAPNR", str(fin["number"]))
 
     fin_embed = discord.Embed(
         title=(title),
