@@ -71,7 +71,7 @@ def get_wr(mapNr):
     urlReq = getRecordsUrl.replace("{mapUid}", mapUid)
     time.sleep(1) #Preventing rate limiting
 
-    x = requests.get(urlReq, headers={"Authorization": "nadeo_v1 t=" + liveToken})
+    x = requests.get(urlReq, headers={"Authorization": "nadeo_v1 t=" + str(liveToken)})
     time.sleep(1) #Preventing rate limiting
 
     findata = ast.literal_eval(x.text)["tops"][0]["top"]
@@ -102,7 +102,7 @@ def get_rank(map_uid, score):
     }
 
     headers = {
-        "Authorization": "nadeo_v1 t=" + live_token,
+        "Authorization": "nadeo_v1 t=" + str(live_token),
         "Content-Type": "application/json"
     }
 
@@ -171,7 +171,7 @@ def refresh_live_API_token():
 
     url = botils.config.CFG.BOT["nadeo_api"]["refresh_live_token_call"]
 
-    headers = {"Content-Type": "application/json", "Authorization": "nadeo_v1 t=" + refresh_live_token, "User-Agent":botils.config.CFG.SECRETS["user-agent"]}
+    headers = {"Content-Type": "application/json", "Authorization": "nadeo_v1 t=" + str(refresh_live_token), "User-Agent":botils.config.CFG.SECRETS["user-agent"]}
     
     x = requests.post(url, headers = headers)
     time.sleep(1) #Preventing rate limiting
@@ -223,7 +223,7 @@ def get_Live_API_token():
 
     url = botils.config.CFG.BOT["nadeo_api"]["access_live_token_call"]
 
-    headers = {"Content-Type": "application/json", "Authorization": "ubi_v1 t=" + ticket, "User-Agent":botils.config.CFG.SECRETS["user-agent"]}
+    headers = {"Content-Type": "application/json", "Authorization": "ubi_v1 t=" + str(ticket), "User-Agent":botils.config.CFG.SECRETS["user-agent"]}
     body = {"audience": "NadeoLiveServices"}
 
     x = requests.post(url, headers = headers, json=body)
